@@ -17,6 +17,4 @@ void kmain(void) {
     enableInterrupts();
 
     print_current_cpu_state();
-
-    print_segment_registers();
 }
