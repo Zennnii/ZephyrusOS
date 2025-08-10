@@ -24,7 +24,8 @@
 #define height 25
 
 void print(const char* s);
-void printHex(uint16_t val);
+void print_hex(uint16_t val);
+void print_dec(unsigned int num);
 void scrollUp();
 void newLine();
 void Reset();

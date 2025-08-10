@@ -39,29 +39,30 @@ void newLine() {
     }
 }
 
-void print(const char* s) {
-    while(*s) {
-        switch(*s) {
-            case '\n':
+void print_char(char c) {
+    switch(c) {
+        case '\n':
+            newLine();
+            break;
+        case '\r':
+            column = 0;
+            break;
+        default:
+            if (column == width) {
                 newLine();
-                break;
-            case '\r':
-                column = 0;
-                break;
-
-            default:
-                if (column == width) {
-                    newLine();
-                }
-
-                vga[line * width + (column++)] = *s | currentColor;
-        }
-        s++;
-        
+            }
+            vga[line * width + (column++)] = c | currentColor;
+            break;
     }
 }
 
-void printHex(uint16_t val) {
+void print(const char* s) {
+    while (*s) {
+        print_char(*s++);
+    }
+}
+
+void print_hex(uint16_t val) {
     const char *hex = "0123456789ABCDEF";
     char buf[5];
     buf[4] = '\0';
@@ -71,4 +72,25 @@ void printHex(uint16_t val) {
         val >>= 4;
     }
     print(buf);
+}
+
+void print_dec(unsigned int num) {
+    if (num == 0) {
+        print("0");
+        return;
+    }
+
+    char buffer[10]; // Enough for 32-bit integer decimal digits
+    int i = 0;
+
+    // Extract digits in reverse order
+    while (num > 0) {
+        buffer[i++] = (num % 10) + '0';
+        num /= 10;
+    }
+
+    // Print digits in correct order
+    for (int j = i - 1; j >= 0; j--) {
+        print_char(buffer[j]);
+    }
 }

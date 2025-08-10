@@ -1,4 +1,5 @@
 #include "gdt.h"
+#include "vga.h"
 
 extern void gdt_flush(addr_t);
 
@@ -16,6 +17,9 @@ void initGdt() {
     setGdtGate(4, 0, 0xFFFFF, 0xF2, 0xCF); // User data segment
 
     gdt_flush((uint32_t)&gdt_ptr);
+
+    print("GDT has been initialized successfully\n");
+    newLine();
 }
 
 void setGdtGate(uint32_t num, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran) {

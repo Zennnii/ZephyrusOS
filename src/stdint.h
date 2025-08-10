@@ -1,3 +1,7 @@
+#define __STDINT_H
+#ifndef STDINT_H
+#define STDINT_H
+
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
 
@@ -13,3 +17,5 @@ typedef unsigned long long uint64_t;
 typedef uint8_t bool;
 #define true 1
 #define false 0
+
+#endif
