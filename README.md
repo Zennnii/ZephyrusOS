@@ -10,6 +10,7 @@ Currently it has:
 * The IDT (Interrupt descriptor table)
 * Basic exception handling
 * Debugging tools
+
 And thats all (for now)
 
 I will be adding a PIT timer later
