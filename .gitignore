@@ -1,0 +1,6 @@
+# Ignore .o files
+*.o
+# Ignore .iso
+*.iso
+# Ignore specific files
+kernel
