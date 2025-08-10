@@ -10,4 +10,4 @@ Currently it has:
 * A GDT (Global descriptor table)
 And thats all (for now)
 
-I will be setting up the IDT later
+I will be setting up the IDT later"# ZephyrusOS" 
