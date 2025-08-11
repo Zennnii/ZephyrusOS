@@ -1,7 +1,7 @@
 # Zephyrus OS
 
-Zephyrus OS is a hobby x86 operating system kernel I started developing on September 8, 2025.  
-This project is ongoing and aims to build a minimal but solid low-level OS foundation.
+Zephyrus OS is a hobby x86 operating system kernel I started developing on August 9, 2025.  
+This project is ongoing.
 
 ---
 
