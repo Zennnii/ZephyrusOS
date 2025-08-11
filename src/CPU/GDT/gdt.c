@@ -1,11 +1,12 @@
 #include "gdt.h"
-#include "vga.h"
+#include "../../vga.h"
 
 extern void gdt_flush(addr_t);
 
 struct gdt_entry_struct gdt_entries[5];
 struct gdt_entry_ptr gdt_ptr;
 
+// Initialize GDT function
 void initGdt() {
     gdt_ptr.limit = (sizeof(struct gdt_entry_struct) * 5) - 1;
     gdt_ptr.base  = (uint32_t)&gdt_entries[0];
@@ -22,6 +23,7 @@ void initGdt() {
     newLine();
 }
 
+// Set GDT gate function
 void setGdtGate(uint32_t num, uint32_t base, uint32_t limit, uint8_t access, uint8_t gran) {
     gdt_entries[num].base_low = (base & 0xFFFF);
     gdt_entries[num].base_middle = (base >> 16) & 0xFF;

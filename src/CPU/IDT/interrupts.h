@@ -1,7 +1,7 @@
 #ifndef INTERRUPT_H
 #define INTERRUPT_H
 
-#include "../stdint.h"
+#include "../../stdint.h"
 
 struct InterruptRegisters {
     uint32_t ds;

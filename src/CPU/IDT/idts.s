@@ -87,29 +87,4 @@ isr_common_stub:
     sti
     iret
 
-%macro IRQ 2
-global irq%1
-irq%1:
-    cli
-    push dword 0        ; Dummy error code
-    push dword %2       ; IRQ number (32 + IRQ)
-    jmp isr_common_stub
-%endmacro
-
-; Standard PC IRQs (0-15)
-IRQ 0, 32    ; Timer (PIT)
-IRQ 1, 33    ; Keyboard
-IRQ 2, 34    ; Cascade (never raised)
-IRQ 3, 35    ; COM2/COM4
-IRQ 4, 36    ; COM1/COM3
-IRQ 5, 37    ; LPT2
-IRQ 6, 38    ; Floppy disk
-IRQ 7, 39    ; LPT1
-IRQ 8, 40    ; CMOS Real-time clock
-IRQ 9, 41    ; Free for peripherals / legacy SCSI / NIC
-IRQ 10, 42   ; Free for peripherals / SCSI / NIC
-IRQ 11, 43   ; Free for peripherals / SCSI / NIC
-IRQ 12, 44   ; PS/2 Mouse
-IRQ 13, 45   ; FPU / Coprocessor / Inter-processor
-IRQ 14, 46   ; Primary ATA Hard Disk
-IRQ 15, 47   ; Secondary ATA Hard Disk
+section .note.GNU-stack noalloc noexec nowrite

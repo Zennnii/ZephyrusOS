@@ -23,6 +23,9 @@
 #define width 80
 #define height 25
 
+#define VGA_CONTROL_PORT 0x3D4
+#define VGA_DATA_PORT    0x3D5
+
 void print(const char* s);
 void print_char(char c);
 void print_hex(uint16_t val);
@@ -30,5 +33,9 @@ void print_dec(unsigned int num);
 void scrollUp();
 void newLine();
 void Reset();
+void backspace();
+void moveCursor(uint16_t row, uint16_t col);
+void get_cursor_position(int* x, int* y);
+uint16_t get_cursor_offset();
 
 #endif

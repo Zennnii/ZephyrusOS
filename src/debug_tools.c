@@ -1,5 +1,5 @@
 #include "debug_tools.h"
-#include "interrupts/interrupts.h"
+#include "CPU/IDT/interrupts.h"
 #include "vga.h"
 
 void print_current_cpu_state() {

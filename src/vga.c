@@ -1,10 +1,42 @@
 #include "vga.h"
+#include "util.h"
 
 uint16_t column = 0;
 uint16_t line = 0;
 uint16_t* const vga = (uint16_t* const) 0xB8000;
 const uint16_t defaultColor = (COLOR8_WHITE << 8) | (COLOR8_BLACK << 12);
 uint16_t currentColor = defaultColor;
+
+
+uint16_t get_cursor_offset() {
+    // Ask VGA controller for high byte of cursor pos
+    outb(VGA_CONTROL_PORT, 0x0E);
+    uint16_t offset = inb(VGA_DATA_PORT) << 8;
+
+    // Ask for low byte of cursor pos
+    outb(VGA_CONTROL_PORT, 0x0F);
+    offset |= inb(VGA_DATA_PORT);
+
+    return offset;
+}
+
+void get_cursor_position(int* x, int* y) {
+    uint16_t offset = get_cursor_offset();
+    *x = offset % width;
+    *y = offset / width;
+}
+
+void moveCursor(uint16_t row, uint16_t col) {
+    uint16_t pos = row * width + col;
+
+    // Tells VGA we want to set cursor high byte
+    outb(VGA_CONTROL_PORT, 0x0E);
+    outb(VGA_DATA_PORT, (pos >> 8) & 0xFF);
+
+    // Tells VGA we want to set cursor low byte
+    outb(VGA_CONTROL_PORT, 0x0F);
+    outb(VGA_DATA_PORT, pos & 0xFF);
+}
 
 void Reset() {
     line = 0;
@@ -15,10 +47,11 @@ void Reset() {
             vga[y * width + x] = ' ' | defaultColor;
         }
     }
+    moveCursor(line, column);
 }
 
 void scrollUp() {
-    for (uint16_t y = 0; y < height; y++) {
+    for (uint16_t y = 1; y < height; y++) {
         for (uint16_t x = 0; x < width; x++) {
             vga[(y-1) * width + x] = vga[y * width + x];
         }
@@ -26,6 +59,7 @@ void scrollUp() {
         for (uint16_t x = 0; x < width; x++) {
             vga[(height - 1) * width + x] = ' ' | defaultColor;
         }
+        moveCursor(line, column);
     }
 
 void newLine() {
@@ -37,6 +71,7 @@ void newLine() {
         scrollUp();
         column = 0;
     }
+    moveCursor(line, column);
 }
 
 void print_char(char c) {
@@ -54,12 +89,14 @@ void print_char(char c) {
             vga[line * width + (column++)] = c | currentColor;
             break;
     }
+    moveCursor(line, column);
 }
 
 void print(const char* s) {
     while (*s) {
         print_char(*s++);
     }
+    moveCursor(line, column);
 }
 
 void print_hex(uint16_t val) {
@@ -72,6 +109,7 @@ void print_hex(uint16_t val) {
         val >>= 4;
     }
     print(buf);
+    moveCursor(line, column);
 }
 
 void print_dec(unsigned int num) {
@@ -93,4 +131,17 @@ void print_dec(unsigned int num) {
     for (int j = i - 1; j >= 0; j--) {
         print_char(buffer[j]);
     }
+    moveCursor(line, column);
+}
+
+void backspace() {
+    int cursor_x, cursor_y;
+    get_cursor_position(&cursor_x, &cursor_y);
+    if (cursor_x > 0) {
+        cursor_x--;
+        int offset = cursor_y * width + cursor_x;
+        vga[offset] = ' ' | currentColor;  // erase char at position
+        moveCursor(cursor_y, cursor_x);
+    }
+    // else cursor_x == 0, ignore backspace so no deleting into previous line
 }
