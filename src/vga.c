@@ -135,13 +135,10 @@ void print_dec(unsigned int num) {
 }
 
 void backspace() {
-    int cursor_x, cursor_y;
-    get_cursor_position(&cursor_x, &cursor_y);
-    if (cursor_x > 0) {
-        cursor_x--;
-        int offset = cursor_y * width + cursor_x;
-        vga[offset] = ' ' | currentColor;  // erase char at position
-        moveCursor(cursor_y, cursor_x);
+    if (column > 0) {
+        column--;
+        vga[line * width + column] = ' ' | currentColor; // Erase char
+        moveCursor(line, column);
     }
-    // else cursor_x == 0, ignore backspace so no deleting into previous line
+    // else if column == 0, do nothing (no backspacing into previous line)
 }
