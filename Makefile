@@ -1,4 +1,4 @@
-all: clean kernel.o vga.o util.o gdt.o idt.o isr.o irq.o pit.o keyboard.o boot.o gdts.o idts.o irqs.o debug_tools.o image
+all: clean kernel.o vga.o util.o gdt.o idt.o isr.o irq.o pit.o keyboard.o kmalloc.o boot.o gdts.o idts.o irqs.o debug_tools.o image
 
 clean: 
 	rm -rf *.o
@@ -30,6 +30,9 @@ pit.o: src/drivers/PIT/pit.c
 keyboard.o: src/drivers/PS2_Keyboard_Driver/keyboard.c
 	gcc -m32 -fno-stack-protector -fno-builtin -ffreestanding -c src/drivers/PS2_Keyboard_Driver/keyboard.c -o keyboard.o
 
+kmalloc.o: src/mm/kmalloc/kmalloc.c
+	gcc -m32 -fno-stack-protector -fno-builtin -ffreestanding -c src/mm/kmalloc/kmalloc.c -o kmalloc.o
+
 boot.o: src/boot.s
 	nasm -f elf32 src/boot.s -o boot.o
 
@@ -47,7 +50,7 @@ debug_tools.o:
 
 
 image: kernel.o vga.o gdt.o boot.o gdts.o
-	ld -m elf_i386 -T linker.ld boot.o kernel.o vga.o util.o debug_tools.o gdt.o gdts.o idt.o idts.o isr.o irq.o irqs.o pit.o keyboard.o -o kernel
+	ld -m elf_i386 -T linker.ld boot.o kernel.o vga.o util.o debug_tools.o gdt.o gdts.o idt.o idts.o isr.o irq.o irqs.o pit.o keyboard.o kmalloc.o -o kernel
 	mkdir -p Zephyrus/boot
 	cp kernel Zephyrus/boot/kernel
 	grub-mkrescue -o Zephyrus.iso Zephyrus
