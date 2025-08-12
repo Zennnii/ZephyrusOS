@@ -1,5 +1,6 @@
 #include "debug_tools.h"
 #include "CPU/IDT/interrupts.h"
+#include "mm/kmalloc/kmalloc.h"
 #include "vga.h"
 
 void print_current_cpu_state() {
@@ -70,4 +71,47 @@ void print_segment_registers() {
     print("GS = 0x"); print_hex(gs ); print(" ");
     print("SS = 0x"); print_hex(ss ); print("\n");
     newLine();
+}
+
+void test_kmalloc() {
+    print("===== Testing kmalloc/kfree =====\n");
+    newLine();
+
+    // Allocate a small block
+    void* a = kmalloc(16);
+    print("Allocated a: "); print_hex((uintptr_t)a); print("\n");
+
+    // Allocate a large block
+    void* b = kmalloc(64);
+    print("Allocated b: "); print_hex((uintptr_t)b); print("\n");
+
+    // Free the first block
+    kfree(a);
+    print("Freed a\n");
+
+    // Allocate again — should reuse freed block if possible
+    void* c = kmalloc(8);
+    print("Allocated c: "); print_hex((uintptr_t)c); print("\n");
+
+    // Check if c == a
+    if (c == a) {
+        print("Memory reuse works\n");
+    }
+    else {
+        print("Memory reuse failed\n");
+    }
+
+    int count = 0;
+    while (1) {
+        void *ptr = kmalloc(128);
+        if (!ptr) {
+            print("Heap exhausted after: ");
+            print_dec(count);
+            print(" allocations.\n");
+            break;
+        }
+        count++;
+    }
+
+    print("===== Test complete =====\n");
 }
