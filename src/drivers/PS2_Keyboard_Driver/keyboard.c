@@ -1,6 +1,8 @@
 #include "keyboard.h"
 
 bool shift_pressed = false;
+bool caps_lock = false;
+char c;
 
 char scancode_map[128] = {
     0, 27, '1', '2', '3', '4', '5', '6',
@@ -13,7 +15,6 @@ char scancode_map[128] = {
     0, ' ', 0, 0, 0, 0, 0, 0, 0
 };
 
-// Shifted versions for keys that change with shift pressed
 char scancode_shift_map[128] = {
     0, 27, '!', '@', '#', '$', '%', '^',
     '&', '*', '(', ')', '_', '+', '\b', '\t',
@@ -26,20 +27,36 @@ char scancode_shift_map[128] = {
 };
 
 void keyboard_isr_handler() {
-    static bool shift_pressed = false;
-
     uint8_t scancode = inb(KBD_DATA_PORT);
-
     bool key_released = scancode & 0x80;
     uint8_t keycode = scancode & 0x7F;
 
+    c = 0; // Clear previous char
+
+    // Handle shift keys
     if (keycode == 0x2A || keycode == 0x36) {
         shift_pressed = !key_released;
         return;
     }
 
+    // Handle caps lock
+    if (!key_released && keycode == 0x3A) {
+        caps_lock = !caps_lock;
+        return;
+    }
+
     if (!key_released) {
-        char c = shift_pressed ? scancode_shift_map[keycode] : scancode_map[keycode];
+        if ((keycode >= 0x10 && keycode <= 0x19) || // Q -> P
+            (keycode >= 0x1E && keycode <= 0x26) || // A -> L
+            (keycode >= 0x2C && keycode <= 0x32))   // Z -> M
+        {
+            bool uppercase = shift_pressed ^ caps_lock;
+            c = uppercase ? scancode_shift_map[keycode] : scancode_map[keycode];
+        }
+        else {
+            c = shift_pressed ? scancode_shift_map[keycode] : scancode_map[keycode];
+        }
+
         if (c) {
             if (c == '\b') {
                 backspace();
