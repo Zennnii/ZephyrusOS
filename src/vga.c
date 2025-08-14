@@ -38,6 +38,16 @@ void moveCursor(uint16_t row, uint16_t col) {
     outb(VGA_DATA_PORT, pos & 0xFF);
 }
 
+void vga_hide_cursor(void) {
+    outb(VGA_CONTROL_PORT, 0x0A); // Cursor Start Register
+    outb(VGA_DATA_PORT, 0x20);  // Set bit 5 to disable cursor
+}
+
+void vga_show_cursor(void) {
+    outb(VGA_CONTROL_PORT, 0x0A);
+    outb(VGA_DATA_PORT, 0x00); // Clear bit 5 to enable
+}
+
 void Reset() {
     line = 0;
     column = 0;
@@ -81,6 +91,9 @@ void print_char(char c) {
             break;
         case '\r':
             column = 0;
+            break;
+        case '\b':
+            backspace();
             break;
         default:
             if (column == width) {

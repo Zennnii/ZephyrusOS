@@ -1,7 +1,7 @@
 #ifndef VGA_H
 #define VGA_H
 
-#include "stdint.h"
+#include "libs/stdint.h"
 
 #define COLOR8_BLACK 0
 #define COLOR8_BLUE 1
@@ -37,5 +37,7 @@ void backspace();
 void moveCursor(uint16_t row, uint16_t col);
 void get_cursor_position(int* x, int* y);
 uint16_t get_cursor_offset();
+void vga_hide_cursor(void);
+void vga_show_cursor(void);
 
 #endif
