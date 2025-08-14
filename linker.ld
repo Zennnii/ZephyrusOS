@@ -8,9 +8,9 @@ SECTIONS
 
     /* Code section: Read + Execute */
     .text ALIGN(4K) : AT(ADDR(.text)) {
-        *(.multiboot)       /* if using GRUB multiboot header */
+        *(.multiboot)
         *(.text)
-        *(.rodata*)         /* read-only data here */
+        *(.rodata*)
     }
 
     /* Data section: Read + Write */
