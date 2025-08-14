@@ -4,6 +4,41 @@ bool shift_pressed = false;
 bool caps_lock = false;
 char c;
 
+#define KEYBOARD_BUFFER_SIZE 128
+
+static char key_buffer[KEYBOARD_BUFFER_SIZE];
+static int key_buffer_head = 0;
+static int key_buffer_tail = 0;
+
+static inline bool buffer_is_empty() {
+    return key_buffer_head == key_buffer_tail;
+}
+
+static inline bool buffer_is_full() {
+    return ((key_buffer_head + 1) % KEYBOARD_BUFFER_SIZE) == key_buffer_tail;
+}
+
+static void buffer_push(char c) {
+    if (!buffer_is_full()) {
+        key_buffer[key_buffer_head] = c;
+        key_buffer_head = (key_buffer_head + 1) % KEYBOARD_BUFFER_SIZE;
+    }
+}
+
+static char buffer_pop() {
+    char c = 0;
+    if (!buffer_is_empty()) {
+        c = key_buffer[key_buffer_tail];
+        key_buffer_tail = (key_buffer_tail + 1) % KEYBOARD_BUFFER_SIZE;
+    }
+    return c;
+}
+
+void buffer_flush(void) {
+    key_buffer_head = 0;
+    key_buffer_tail = 0;
+}
+
 char scancode_map[128] = {
     0, 27, '1', '2', '3', '4', '5', '6',
     '7', '8', '9', '0', '-', '=', '\b', '\t',
@@ -63,6 +98,14 @@ void keyboard_isr_handler() {
             } else {
                 print_char(c);
             }
+            buffer_push(c);
         }
     }
+}
+
+char keyboard_getchar() {
+    while (buffer_is_empty()) {
+        asm volatile ("hlt");
+    }
+    return buffer_pop();
 }
