@@ -1,4 +1,4 @@
-#include "../../stdint.h"
+#include "../../libs/stdint.h"
 
 #define KERNEL_HEAP_START 0x01000000
 #define KERNEL_HEAP_SIZE  0x00180000  // 1.5 MB
@@ -6,6 +6,8 @@
 
 static uintptr_t heap_start;
 static uintptr_t heap_end;
+
+void heap_init();
 
 void* kmalloc(size_t size);
 
