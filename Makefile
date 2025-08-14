@@ -1,4 +1,4 @@
-all: clean kernel.o vga.o util.o gdt.o idt.o isr.o irq.o pit.o keyboard.o kmalloc.o boot.o gdts.o idts.o irqs.o debug_tools.o image
+all: clean kernel.o vga.o util.o gdt.o idt.o isr.o irq.o pit.o keyboard.o kmalloc.o boot.o gdts.o idts.o irqs.o debug_tools.o shell.o string.o bcmds.o image
 
 clean: 
 	rm -rf *.o
@@ -48,9 +48,17 @@ irqs.o: src/CPU/IDT/IRQ/irqs.s
 debug_tools.o:
 	gcc -m32 -fno-stack-protector -fno-builtin -ffreestanding -c src/debug_tools.c -o debug_tools.o
 
+shell.o: src/shell/shell.c
+	gcc -m32 -fno-stack-protector -fno-builtin -ffreestanding -c src/shell/shell.c -o shell.o
+
+string.o: src/libs/string.c
+	gcc -m32 -fno-stack-protector -fno-builtin -ffreestanding -c src/libs/string.c -o string.o
+
+bcmds.o: src/shell/bcmds/bcmds.c
+	gcc -m32 -fno-stack-protector -fno-builtin -ffreestanding -c src/shell/bcmds/bcmds.c -o bcmds.o
 
 image: kernel.o vga.o gdt.o boot.o gdts.o
-	ld -m elf_i386 -T linker.ld boot.o kernel.o vga.o util.o debug_tools.o gdt.o gdts.o idt.o idts.o isr.o irq.o irqs.o pit.o keyboard.o kmalloc.o -o kernel
+	ld -m elf_i386 -T linker.ld boot.o kernel.o vga.o util.o debug_tools.o gdt.o gdts.o idt.o idts.o isr.o irq.o irqs.o pit.o keyboard.o kmalloc.o shell.o string.o bcmds.o -o kernel
 	mkdir -p Zephyrus/boot
 	cp kernel Zephyrus/boot/kernel
 	grub-mkrescue -o Zephyrus.iso Zephyrus
