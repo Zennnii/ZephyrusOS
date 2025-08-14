@@ -75,7 +75,6 @@ void print_segment_registers() {
 
 void test_kmalloc() {
     print("===== Testing kmalloc/kfree =====\n");
-    newLine();
 
     // Allocate a small block
     void* a = kmalloc(16);

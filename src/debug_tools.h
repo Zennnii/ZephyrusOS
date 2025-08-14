@@ -1,7 +1,7 @@
 #ifndef DEBUG_TOOLS_H
 #define DEBUG_TOOLS_H
 
-#include "stdint.h"
+#include "libs/stdint.h"
 #include "CPU/IDT/idt.h"
 #include "mm/kmalloc/kmalloc.h"
 
