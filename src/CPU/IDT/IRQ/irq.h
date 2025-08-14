@@ -1,7 +1,7 @@
  #ifndef IRQ_H
  #define IRQ_H
 
- #include "../../../stdint.h"
+ #include "../../../libs/stdint.h"
 
 struct interruptRegisters {
     uint32_t edi;

@@ -2,7 +2,7 @@
 #ifndef IDT_H
 #define IDT_H
 
-#include "../../stdint.h"
+#include "../../libs/stdint.h"
 #include "interrupts.h"
 
 struct idt_entry_struct {
