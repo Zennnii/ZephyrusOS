@@ -14,6 +14,7 @@ This project is ongoing.
 - Interrupt Descriptor Table (IDT) with basic exception handling  
 - Debugging tools for kernel development 
 - Basic kernel shell with a few basic commands 
+- Command parsing
 - **Added drivers:**  
   - PIT Timer for system ticks and timekeeping  
   - PS/2 Keyboard driver with shift key support and keyboard input buffer
