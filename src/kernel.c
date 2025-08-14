@@ -6,13 +6,15 @@
 #include "drivers/PIT/pit.h"
 #include "drivers/PS2_Keyboard_Driver/keyboard.h"
 #include "vga.h"
-#include "stdint.h"
+#include "libs/stdint.h"
 #include "debug_tools.h"
+#include "shell/shell.h"
 
 extern volatile uint32_t timer_ticks;
 extern volatile uint32_t sys_uptime;
 
 void kmain(void) {
+    heap_init();
     pit_set_frequency(100);
 
     print("Welcome to Zephyrus!\n");
@@ -28,6 +30,8 @@ void kmain(void) {
     enableInterrupts();
 
     print_current_cpu_state();
+
+    shell();
 
     // Halts until next interrupt arrives
     while (1) {
