@@ -12,10 +12,11 @@ This project is ongoing.
   - Newline, carriage return, and screen scrolling  
 - Global Descriptor Table (GDT) implementation  
 - Interrupt Descriptor Table (IDT) with basic exception handling  
-- Debugging tools for kernel development  
+- Debugging tools for kernel development 
+- Basic kernel shell with a few basic commands 
 - **Added drivers:**  
   - PIT Timer for system ticks and timekeeping  
-  - PS/2 Keyboard driver with shift key support  
+  - PS/2 Keyboard driver with shift key support and keyboard input buffer
   - Busy-wait delay function  
 
 ---
@@ -29,8 +30,7 @@ This project is ongoing.
 ## Planned Features (TODO)
 
 - Filesystem support  
-- Basic shell interface  
-- Keyboard input buffer and enhancements  
+- Paging
 - Additional device drivers (mouse, storage)   
 
 ---
