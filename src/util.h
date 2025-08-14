@@ -1,7 +1,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include "stdint.h"
+#include "libs/stdint.h"
 #include "CPU/IDT/IRQ/irq.h"
 #include "drivers/PIT/pit.h"
 

@@ -9,6 +9,12 @@ void memset(void *dest, char val, uint32_t count) {
     }
 }
 
+void memcpy(uint8_t *dest, const uint8_t *src, unsigned int len) {
+    for (unsigned int i = 0; i < len; i++) {
+        dest[i] = src[i];
+    }
+}
+
 void enableInterrupts() {
     asm volatile("sti");
 }
