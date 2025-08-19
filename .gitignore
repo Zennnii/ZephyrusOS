@@ -3,4 +3,4 @@
 # Ignore .iso
 *.iso
 # Ignore specific files
-kernel
+kernel_elf

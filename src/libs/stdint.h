@@ -1,4 +1,3 @@
-#define __STDINT_H
 #ifndef STDINT_H
 #define STDINT_H
 

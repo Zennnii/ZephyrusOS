@@ -1,66 +1,93 @@
-all: clean kernel.o vga.o util.o gdt.o idt.o isr.o irq.o pit.o keyboard.o kmalloc.o boot.o gdts.o idts.o irqs.o debug_tools.o shell.o string.o bcmds.o image
+.PHONY: all clean riso rundebug
 
-clean: 
-	rm -rf *.o
+clean:
+	rm -rf *.o kernel_elf Zephyrus.iso Zephyrus/
 
-kernel.o: src/kernel.c
-	gcc -m32 -fno-stack-protector -fno-builtin -ffreestanding -c src/kernel.c -o kernel.o
+CFLAGS = -m32 -ffreestanding -fno-builtin -nostdlib -nostdinc \
+         -Iinclude -Isrc/kernel -Isrc/libs -Isrc/includes
 
-vga.o: src/vga.c
-	gcc -m32 -fno-stack-protector -fno-builtin -ffreestanding -c src/vga.c -o vga.o
+OBJS = kernel.o vga.o util.o gdt.o idt.o isr.o irq.o pit.o keyboard.o kmalloc.o \
+       boot.o gdts.o idts.o irqs.o debug_tools.o cli.o string.o bcmds.o logf.o \
+       cmos_rtc.o bmcli.o bmcmds.o pcid.o
 
-util.o: src/util.c
-	gcc -m32 -fno-stack-protector -fno-builtin -ffreestanding -c src/util.c -o util.o
+all: $(OBJS) image
 
-gdt.o: src/CPU/GDT/gdt.c
-	gcc -m32 -fno-stack-protector -fno-builtin -ffreestanding -c src/CPU/GDT/gdt.c -o gdt.o
+kernel.o: src/kernel/kernel.c
+	gcc  $(CFLAGS) -c src/kernel/kernel.c -o kernel.o
 
-idt.o: src/CPU/IDT/idt.c
-	gcc -m32 -fno-stack-protector -fno-builtin -ffreestanding -c src/CPU/IDT/idt.c -o idt.o
+vga.o: src/kernel/vga.c
+	gcc  $(CFLAGS) -c src/kernel/vga.c -o vga.o
 
-isr.o: src/CPU/IDT/isr.c
-	gcc -m32 -fno-stack-protector -fno-builtin -ffreestanding -c src/CPU/IDT/isr.c -o isr.o
+util.o: src/kernel/util.c
+	gcc  $(CFLAGS) -c src/kernel/util.c -o util.o
 
-irq.o: src/CPU/IDT/IRQ/irq.c
-	gcc -m32 -fno-stack-protector -fno-builtin -ffreestanding -c src/CPU/IDT/IRQ/irq.c -o irq.o
+gdt.o: src/kernel/CPU/GDT/gdt.c
+	gcc $(CFLAGS) -c src/kernel/CPU/GDT/gdt.c -o gdt.o
 
-pit.o: src/drivers/PIT/pit.c
-	gcc -m32 -fno-stack-protector -fno-builtin -ffreestanding -c src/drivers/PIT/pit.c -o pit.o
+idt.o: src/kernel/CPU/IDT/idt.c
+	gcc  $(CFLAGS) -c src/kernel/CPU/IDT/idt.c -o idt.o
 
-keyboard.o: src/drivers/PS2_Keyboard_Driver/keyboard.c
-	gcc -m32 -fno-stack-protector -fno-builtin -ffreestanding -c src/drivers/PS2_Keyboard_Driver/keyboard.c -o keyboard.o
+isr.o: src/kernel/CPU/IDT/isr.c
+	gcc  $(CFLAGS) -c src/kernel/CPU/IDT/isr.c -o isr.o
 
-kmalloc.o: src/mm/kmalloc/kmalloc.c
-	gcc -m32 -fno-stack-protector -fno-builtin -ffreestanding -c src/mm/kmalloc/kmalloc.c -o kmalloc.o
+irq.o: src/kernel/CPU/IDT/IRQ/irq.c
+	gcc  $(CFLAGS) -c src/kernel/CPU/IDT/IRQ/irq.c -o irq.o
 
-boot.o: src/boot.s
-	nasm -f elf32 src/boot.s -o boot.o
+pit.o: src/kernel/drivers/PIT/pit.c
+	gcc  $(CFLAGS) -c src/kernel/drivers/PIT/pit.c -o pit.o
 
-gdts.o: src/CPU/GDT/gdt.s
-	nasm -f elf32 src/CPU/GDT/gdt.s -o gdts.o
+keyboard.o: src/kernel/drivers/PS2_Keyboard_Driver/keyboard.c
+	gcc $(CFLAGS) -c src/kernel/drivers/PS2_Keyboard_Driver/keyboard.c -o keyboard.o
 
-idts.o: src/CPU/IDT/idts.s
-	nasm -f elf32 src/CPU/idt/idts.s -o idts.o
+kmalloc.o: src/kernel/mm/kmalloc/kmalloc.c
+	gcc $(CFLAGS) -c src/kernel/mm/kmalloc/kmalloc.c -o kmalloc.o
 
-irqs.o: src/CPU/IDT/IRQ/irqs.s
-	nasm -f elf32 src/CPU/IDT/IRQ/irqs.s -o irqs.o
+boot.o: src/boot/boot.s
+	nasm -f elf32 src/boot/boot.s -o boot.o
 
-debug_tools.o:
-	gcc -m32 -fno-stack-protector -fno-builtin -ffreestanding -c src/debug_tools.c -o debug_tools.o
+gdts.o: src/kernel/CPU/GDT/gdt.s
+	nasm -f elf32 src/kernel/CPU/GDT/gdt.s -o gdts.o
 
-shell.o: src/shell/shell.c
-	gcc -m32 -fno-stack-protector -fno-builtin -ffreestanding -c src/shell/shell.c -o shell.o
+idts.o: src/kernel/CPU/IDT/idts.s
+	nasm -f elf32 src/kernel/CPU/IDT/idts.s -o idts.o
+
+irqs.o: src/kernel/CPU/IDT/IRQ/irqs.s
+	nasm -f elf32 src/kernel/CPU/IDT/IRQ/irqs.s -o irqs.o
+
+debug_tools.o: src/kernel/debug_tools.c
+	gcc $(CFLAGS) -c src/kernel/debug_tools.c -o debug_tools.o
+
+cli.o: src/kernel/CLI/cli.c
+	gcc $(CFLAGS) -c src/kernel/CLI/cli.c -o cli.o
 
 string.o: src/libs/string.c
-	gcc -m32 -fno-stack-protector -fno-builtin -ffreestanding -c src/libs/string.c -o string.o
+	gcc $(CFLAGS) -c src/libs/string.c -o string.o
 
-bcmds.o: src/shell/bcmds/bcmds.c
-	gcc -m32 -fno-stack-protector -fno-builtin -ffreestanding -c src/shell/bcmds/bcmds.c -o bcmds.o
+bcmds.o: src/kernel/CLI/bcmds/bcmds.c
+	gcc $(CFLAGS) -c src/kernel/CLI/bcmds/bcmds.c -o bcmds.o
 
-image: kernel.o vga.o gdt.o boot.o gdts.o
-	ld -m elf_i386 -T linker.ld boot.o kernel.o vga.o util.o debug_tools.o gdt.o gdts.o idt.o idts.o isr.o irq.o irqs.o pit.o keyboard.o kmalloc.o shell.o string.o bcmds.o -o kernel
-	mkdir -p Zephyrus/boot
-	cp kernel Zephyrus/boot/kernel
+logf.o: src/kernel/logf/logf.c
+	gcc $(CFLAGS) -c src/kernel/logf/logf.c -o logf.o
+
+cmos_rtc.o: src/kernel/drivers/cmos_rtc/cmos_rtc.c
+	gcc $(CFLAGS) -c src/kernel/drivers/cmos_rtc/cmos_rtc.c -o cmos_rtc.o
+
+bmcli.o: src/kernel/CLI/bmcli/bmcli.c
+	gcc $(CFLAGS) -c src/kernel/CLI/bmcli/bmcli.c -o bmcli.o
+
+bmcmds.o: src/kernel/CLI/bmcli/bmcmds/bmcmds.c
+	gcc $(CFLAGS) -c src/kernel/CLI/bmcli/bmcmds/bmcmds.c -o bmcmds.o
+
+pcid.o: src/kernel/CLI/pcid_cmds/pcid.c
+	gcc $(CFLAGS) -c src/kernel/CLI/pcid_cmds/pcid.c -o pcid.o
+
+image: $(OBJS)
+	ld -m elf_i386 -T linker.ld $(OBJS) -o kernel_elf
+	mkdir -p Zephyrus/boot/grub
+	cp kernel_elf Zephyrus/boot/kernel_elf
+	echo 'menuentry "Zephyrus OS" {' > Zephyrus/boot/grub/grub.cfg
+	echo '    multiboot /boot/kernel_elf' >> Zephyrus/boot/grub/grub.cfg
+	echo '}' >> Zephyrus/boot/grub/grub.cfg
 	grub-mkrescue -o Zephyrus.iso Zephyrus
 
 riso:
