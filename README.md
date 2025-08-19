@@ -7,18 +7,32 @@ This project is ongoing.
 
 ## Current Features
 
-- Basic VGA text output functions:  
-  - Print strings, characters, hex values  
-  - Newline, carriage return, and screen scrolling  
-- Global Descriptor Table (GDT) implementation  
-- Interrupt Descriptor Table (IDT) with basic exception handling  
-- Debugging tools for kernel development 
-- Basic kernel shell with a few basic commands 
-- Command parsing
-- **Added drivers:**  
+- **Core kernel**
+  - VGA text output: print strings, characters, hex values, newline, carriage return, scrolling  
+  - Global Descriptor Table (GDT) implementation  
+  - Interrupt Descriptor Table (IDT) with basic exception handling  
+  - Kernel panic handling (fatal error reporting)  
+  - Kernel logging system for debugging and runtime information  
+
+- **Drivers**
   - PIT Timer for system ticks and timekeeping  
-  - PS/2 Keyboard driver with shift key support and keyboard input buffer
+  - PS/2 Keyboard driver with shift key support and input buffering  
+  - CMOS Real-Time Clock (RTC) driver  
   - Busy-wait delay function  
+
+- **Kernel shell (CLI)**
+  - Command parsing with argument support  
+  - Built-in commands (e.g. `echo`, `help`, `time`, etc.)  
+  - `meminfo` command (prints available system RAM)  
+  - Additional internal commands and fallback CLI  
+
+- **Bootloader**
+  - GRUB multiboot-compliant header in `boot.s`  
+  - Improved stack setup and multiboot information passing  
+
+- **Project structure**
+  - Organized source tree into `kernel/`, `lib/`, `boot/`, and `includes/`  
+  - Updated `.gitignore` for cleaner version control  
 
 ---
 
@@ -31,8 +45,8 @@ This project is ongoing.
 ## Planned Features (TODO)
 
 - Filesystem support  
-- Paging
-- Additional device drivers (mouse, storage)   
+- Paging  
+- Additional device drivers (mouse, storage)  
 
 ---
 
