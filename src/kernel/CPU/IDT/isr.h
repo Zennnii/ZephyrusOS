@@ -1,7 +1,6 @@
 #ifndef ISR_H
 #define ISR_H
 
-#include "isr.h"
 #include "idt.h"
 #include "interrupts.h"
 #include "vga.h"
@@ -10,10 +9,15 @@
 #include "drivers/PS2_Keyboard_Driver/keyboard.h"
 #include "drivers/cmos_rtc/cmos_rtc.h"
 
+// ISR array
+extern void (*isr_array[32])();
 
+// ISR installation and handler
 void isr_install();
 void isr_handler(struct InterruptRegisters* regs);
+void check_exceptions();
 
+// ISR extern declarations (0-31 exceptions)
 extern void isr0();
 extern void isr1();
 extern void isr2();
@@ -47,7 +51,13 @@ extern void isr29();
 extern void isr30();
 extern void isr31();
 
+// System calls
 extern void isr128();
 extern void isr177();
+
+// IRQ handlers
+void irq0_handler();
+void rtc_isr_handler();
+void keyboard_isr_handler();
 
 #endif

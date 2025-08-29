@@ -1,8 +1,8 @@
 #include "irq.h"
 #include "../idt.h"
-#include "../../../util.h"
-#include "../../../drivers/PIT/pit.h"
-#include "../../../drivers/PS2_Keyboard_Driver/keyboard.h"
+#include "util.h"
+#include "drivers/PIT/pit.h"
+#include "drivers/PS2_Keyboard_Driver/keyboard.h"
 
 #define PIC1_COMMAND 0x20
 #define PIC2_COMMAND 0xA0
@@ -69,8 +69,7 @@ void irq0_handler() {
 
 void irq1_handler() {
     keyboard_isr_handler();
-
-    send_eoi(0);
+    send_eoi(1);
 }
 
 void irq8_handler() {

@@ -2,6 +2,7 @@
  #define IRQ_H
 
  #include "stdint.h"
+ #include "../idt.h"
 
 struct interruptRegisters {
     uint32_t edi;

@@ -9,8 +9,8 @@ idt_flush:
 global isr%1
 isr%1:
     cli
-    push dword 0          ; dummy err_code
-    push dword %1         ; interrupt number
+    push dword 0         ; dummy err_code
+    push dword %1        ; interrupt number
     jmp isr_common_stub_noerr
 %endmacro
 
@@ -18,7 +18,7 @@ isr%1:
 global isr%1
 isr%1:
     cli
-    push dword %1         ; interrupt number
+    push dword %1        ; interrupt number
     ; CPU already pushed error code
     jmp isr_common_stub_err
 %endmacro
@@ -31,7 +31,6 @@ ISR_NOERRORCODE 4
 ISR_NOERRORCODE 5
 ISR_NOERRORCODE 6
 ISR_NOERRORCODE 7
-
 ISR_ERRORCODE 8
 ISR_NOERRORCODE 9
 ISR_ERRORCODE 10
@@ -56,58 +55,49 @@ ISR_NOERRORCODE 28
 ISR_NOERRORCODE 29
 ISR_NOERRORCODE 30
 ISR_NOERRORCODE 31
-
 ISR_NOERRORCODE 128
 ISR_NOERRORCODE 177
 
 extern isr_handler
 
 global isr_common_stub_noerr
-
 isr_common_stub_noerr:
     pusha
     push ds
-
     mov ax, 0x10
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
 
-    mov eax, esp        ; pointer to InterruptRegisters
-    push eax
+    push esp
     call isr_handler
-    add esp, 4          ; clean argument
+    add esp, 4
 
     pop ds
     popa
-
-    add esp, 8          ; clean int_no + dummy err_code
+    add esp, 8
 
     sti
     iret
 
 global isr_common_stub_err
-
 isr_common_stub_err:
     pusha
     push ds
-
     mov ax, 0x10
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
 
-    mov eax, esp        ; pointer to InterruptRegisters
-    push eax
+    push esp
     call isr_handler
-    add esp, 4          ; clean argument
+    add esp, 4
 
     pop ds
     popa
-
-    add esp, 8          ; clean int_no + err_code
+    add esp, 4
 
     sti
     iret
