@@ -18,4 +18,8 @@ void* kmalloc(size_t size);
 
 void kfree(void* ptr);
 
+void* kmalloc_a(size_t size, size_t align);
+
+void kfree_a(void* ptr);
+
 #endif

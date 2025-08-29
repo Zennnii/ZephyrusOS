@@ -85,3 +85,18 @@ void kfree(void* ptr) {
         block->next = block->next->next;
     }
 }
+
+void* kmalloc_a(size_t size, size_t align) {
+    uintptr_t raw = (uintptr_t) kmalloc(size + align + sizeof(uintptr_t));
+    uintptr_t aligned = (raw + sizeof(uintptr_t) + (align - 1)) & ~(align - 1);
+
+    // Store original pointer just before aligned one
+    ((uintptr_t*)aligned)[-1] = raw;
+
+    return (void*)aligned;
+}
+
+void kfree_a(void* ptr) {
+    uintptr_t raw = ((uintptr_t*)ptr)[-1];
+    kfree((void*)raw);
+}
