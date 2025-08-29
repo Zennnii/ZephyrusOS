@@ -91,7 +91,7 @@ image: $(OBJS)
 	grub-mkrescue -o Zephyrus.iso Zephyrus
 
 riso:
-	qemu-system-i386 Zephyrus.iso
+	qemu-system-i386 -cpu qemu32 Zephyrus.iso
 
 rundebug:
-	qemu-system-i386 -monitor stdio -d int,cpu_reset -D qemu.log -no-reboot Zephyrus.iso
+	qemu-system-i386 -cpu qemu32 -monitor stdio -d in_asm,cpu,int,guest_errors -D qemu.log -no-reboot Zephyrus.iso
