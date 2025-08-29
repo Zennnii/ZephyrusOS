@@ -53,6 +53,7 @@ void shutdownf() {
 
 // Reboots the computer via 8042
 void reboot8042() {
+    cli_running = false;
     wait(2);
     Reset();
     wait(3);

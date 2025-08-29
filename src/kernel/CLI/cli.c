@@ -55,16 +55,19 @@ void getline(char *out) {
 
         if (ch == '\n') { // If enter
             out[len] = '\0'; // Null terminate the string
+            newLine();
             return;
         }
         else if (ch == '\b') {
             if (len > 0) {
             len--;
+            print("\b \b");
             }
         }
         else {
             if (len < LINE_BUFFER_SIZE - 1) {
                 out[len++] = ch;
+                print_char(ch);
             }
         }
     }

@@ -26,6 +26,7 @@ command_t commandsb[] = {
     {"load-main-cli", load_main_cli},
     {"shutdown", shutdownf},
     {"reboot", reboot8042},
+    {"help", helpb},
     {NULL, NULL}
 };
 
