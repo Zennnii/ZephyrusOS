@@ -15,47 +15,66 @@
 multiboot_info_t* mbi;
 
 void kmain(uint32_t multiboot_info_addr) {
+    // Ensure interrupts are disabled during critical setup
+    __asm__ volatile("cli");
+    
     mbi = (multiboot_info_t*)multiboot_info_addr;
 
-    // Initialize GDT
+    // Phase 1: Core CPU Setup (interrupts disabled)
+    LOG_LOAD("Initializing GDT...");
     initGdt();
-
-    // Initialize IDT
+    
+    LOG_LOAD("Initializing IDT...");
     initIdt();
-    // Install ISR
+
+    LOG_LOAD("Installing ISRs...");
     isr_install();
-    // Install IRQ
+    
+    LOG_LOAD("Installing IRQs...");
     irq_install();
-    // Enables interrupts (sti)
+    
+    // Phase 2: Memory Management (still interrupts disabled)
+    LOG_LOAD("Initializing Heap...");
+    heap_init();
+    
+    // Phase 3: Enable interrupts and test
+    LOG_LOAD("Enabling Interrupts...");
     enableInterrupts();
     
-    // Initialize kernel heap (1.5mb)
-    heap_init();
-
-    // Set PIT Timers frequency (100 ticks a second)
+    // Small delay to test if interrupts work without crashing
+    for (volatile int i = 0; i < 1000000; i++);
+    
+    // Phase 4: Initialize hardware drivers (interrupts now enabled)
+    LOG_LOAD("Initializing PIT...");
     pit_set_frequency(100);
-
-    // Initialize keyboard driver
+    
+    LOG_LOAD("Initializing PS/2 Keyboard Driver...");
     init_keyboard();
-
-    // Initialize CMOS RTC driver
+    
+    LOG_LOAD("Initializng CMOS RTC...");
     init_rtc();
 
-    LOG_INFO("Loading kernel CLI");
+    // Phase 5: System ready
+    newLine();
+    LOG_INFO("Kernel initialization complete");
+    LOG_INFO("Loading kernel CLI...");
 
-    wait(1);
+    // Brief pause before starting CLI
+    wait(2);
     Reset();
 
-    // Print welcome messsage
-    print("Welcome to "); printcol("Zephyrus", COLOR8_LIGHT_BLUE); print("!\n");
+    print("Welcome to "); 
+    printcol("Zephyrus", COLOR8_LIGHT_BLUE); 
+    print("!\n");
     newLine();
 
-    // Runs the kernels CLI
+    // Phase 6: Main kernel loop
     cli();
 
-    // Halts until next interrupt arrives
+    wait(2);
+
     while (1) {
-        asm volatile ("hlt");
+        check_exceptions();
+        __asm__ volatile("hlt"); 
     }
-     
 }
