@@ -20,4 +20,11 @@ gdt_flush:
 .flush:
 	ret
 
+global tss_flush
+
+tss_flush:
+    mov ax, 0x2B
+    ltr ax
+    ret
+
 section .note.GNU-stack noalloc noexec nowrite
