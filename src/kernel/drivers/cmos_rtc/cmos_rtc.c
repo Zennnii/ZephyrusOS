@@ -80,5 +80,5 @@ void init_rtc() {
     outb(0x70, 0x0C);
     inb(0x71);
 
-    LOG_INFO("CMOS RTC Driver loaded");
+    LOG_INFO("CMOS RTC Initialized Successfully");
 }
