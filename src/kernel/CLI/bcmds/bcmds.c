@@ -30,9 +30,10 @@ void helpf() {
     print("panic: Initiates a test kernel panic\n");
     print("colors: Prints all the colors available\n");
     print("time: Prints current date and time\n");
-    print("meminfo: Prints the current amount of RAM the system has\n");
+    print("meminfo: Prints the amount of available system RAM\n");
     print("beep <frequency> <duration>: Plays a certain frequency for a certain duration\n");
     print("music: Plays a short song\n");
+    print("rd <file name> <file extension>: Prints the contents of a file\n");
     print("exit: Exits kernel CLI (falls back to bare minimum CLI)\n");
 }
 
