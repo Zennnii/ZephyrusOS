@@ -4,3 +4,7 @@
 *.iso
 # Ignore specific files
 kernel_elf
+# Ignore .py files
+*.py
+# Ignore .img files
+*.img
