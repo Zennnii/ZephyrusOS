@@ -18,21 +18,21 @@ This project is ongoing.
   - PIT Timer for system ticks and timekeeping  
   - PS/2 Keyboard driver with shift key support and input buffering  
   - CMOS Real-Time Clock (RTC) driver  
-  - Busy-wait delay function  
+  - PC Speaker driver
+  - ATA Driver (Read only)
+
+- **Filesystem**
+ - Support for the FAT16 filesystem
 
 - **Kernel shell (CLI)**
   - Command parsing with argument support  
   - Built-in commands (e.g. `echo`, `help`, `time`, etc.)  
   - `meminfo` command (prints available system RAM)  
+  - `rd` command (prints the contents of a file)
   - Additional internal commands and fallback CLI  
 
 - **Bootloader**
-  - GRUB multiboot-compliant header in `boot.s`  
-  - Improved stack setup and multiboot information passing  
-
-- **Project structure**
-  - Organized source tree into `kernel/`, `lib/`, `boot/`, and `includes/`  
-  - Updated `.gitignore` for cleaner version control  
+  - GRUB multiboot-compliant header in `boot.s`
 
 ---
 
@@ -44,9 +44,10 @@ This project is ongoing.
 
 ## Planned Features (TODO)
 
-- Filesystem support  
+- Reading/writing to more then just the root directory
+- Write support 
 - Paging  
-- Additional device drivers (mouse, storage)  
+- Additional device drivers (COM, PS/2 Mouse) 
 
 ---
 
