@@ -6,19 +6,25 @@
 #include "drivers/PIT/pit.h"
 #include "drivers/PS2_Keyboard_Driver/keyboard.h"
 #include "drivers/cmos_rtc/cmos_rtc.h"
+#include "drivers/Speaker/speaker.h"
+//#include "drivers/ata/ata.h"
 #include "vga.h"
 #include "stdint.h"
 #include "debug_tools.h"
 #include "CLI/cli.h"
 #include "multiboot.h"
+//#include "fs/fat16/fat16.h"
 
 multiboot_info_t* mbi;
 
 void kmain(uint32_t multiboot_info_addr) {
+
     // Ensure interrupts are disabled during critical setup
     __asm__ volatile("cli");
     
     mbi = (multiboot_info_t*)multiboot_info_addr;
+
+    Reset();
 
     // Phase 1: Core CPU Setup (interrupts disabled)
     LOG_LOAD("Initializing GDT...");
@@ -51,8 +57,14 @@ void kmain(uint32_t multiboot_info_addr) {
     LOG_LOAD("Initializing PS/2 Keyboard Driver...");
     init_keyboard();
     
-    LOG_LOAD("Initializng CMOS RTC...");
+    LOG_LOAD("Initializing CMOS RTC...");
     init_rtc();
+
+    LOG_LOAD("Initializing PC Speaker...");
+    init_speaker();
+
+    LOG_LOAD("Initializing FAT16...");
+    fat16_init();
 
     // Phase 5: System ready
     newLine();
