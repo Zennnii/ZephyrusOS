@@ -9,6 +9,8 @@
 #include "drivers/PIT/pit.h"
 #include "drivers/cmos_rtc/cmos_rtc.h"
 #include "../bmcli/bmcli.h"
+#include "drivers/Speaker/speaker.h"
+#include "fs/fat16/fat16.h"
 
 #define LINE_BUFFER_SIZE 256
 
@@ -23,6 +25,9 @@ void uptimef();
 void panicf();
 void colorsf();
 void timef();
+void beepf(int argc, char *argv[]);
+void rdf(int argc, char **argv);
+void musicf();
 void exitf();
 
 #endif

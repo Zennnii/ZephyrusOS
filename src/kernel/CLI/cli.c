@@ -93,6 +93,9 @@ command_t commands[] = {
     {"colors", colorsf},
     {"time", timef},
     {"meminfo", meminfof},
+    {"beep", beepf},
+    {"music", musicf},
+    {"rd", rdf},
     {"exit", exitf},
     {NULL, NULL}
 };

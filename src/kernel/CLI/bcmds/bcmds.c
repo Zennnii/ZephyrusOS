@@ -30,6 +30,9 @@ void helpf() {
     print("panic: Initiates a test kernel panic\n");
     print("colors: Prints all the colors available\n");
     print("time: Prints current date and time\n");
+    print("meminfo: Prints the current amount of RAM the system has\n");
+    print("beep <frequency> <duration>: Plays a certain frequency for a certain duration\n");
+    print("music: Plays a short song\n");
     print("exit: Exits kernel CLI (falls back to bare minimum CLI)\n");
 }
 
@@ -105,6 +108,180 @@ void colorsf() {
 
 void timef() {
     print_date_time();
+}
+
+void beepf(int argc, char *argv[]) {
+
+    // Convert arguments to integers
+    uint32_t freq = atoi(argv[1]);
+    uint32_t duration = atoi(argv[2]);
+
+    // Play sound
+    speaker_play(freq);
+
+    // Wait duration
+    wait(duration);   // your delay function (ms or ticks)
+    
+    // Stop sound
+    speaker_stop();
+}
+
+void rdf(int argc, char **argv) {
+    
+    if (argc < 3) {
+        print("Usage: rdf <filename> <ext>\n");
+        return;
+    }
+
+    uint8_t buffer[4096]; // Enough for small files
+    uint32_t size;
+
+    char name[8];
+    char ext[3];
+
+    // Fill name with spaces
+    memset(name, ' ', 8);
+    // Copy up to 8 characters from argv[1]
+    for (int i = 0; i < 8 && argv[1][i] != '\0'; i++) {
+        name[i] = argv[1][i];
+    }
+
+    // Fill ext with spaces
+    memset(ext, ' ', 3);
+    // Copy up to 3 characters from argv[2]
+    for (int i = 0; i < 3 && argv[2][i] != '\0'; i++) {
+        ext[i] = argv[2][i];
+    }
+
+    for (int i = 0; i < 8 && argv[1][i] != '\0'; i++) {
+    char c = argv[1][i];
+    if (c >= 'a' && c <= 'z') c -= 32; // to uppercase
+    name[i] = c;
+    }
+
+    for (int i = 0; i < 3 && argv[2][i] != '\0'; i++) {
+        char c = argv[2][i];
+        if (c >= 'a' && c <= 'z') c -= 32; // to uppercase
+        ext[i] = c;
+    }
+
+    if (fat16_read_file(name, ext, buffer, &size)) {
+        print(buffer);
+        newLine();
+    } else {
+        print("Error: File not found\n");
+    }
+}
+
+// Frequency table (approximate, integer Hz)
+// -----------------------------
+// B-flat major scale notes
+// -----------------------------
+#define C4 261
+#define Cs4 277
+#define D4 294
+#define Ds4 311    // Eb
+#define E4 330
+#define F4 349
+#define Fs4 370    // Gb
+#define G4 392
+#define Gs4 415    // Ab
+#define A4 440
+#define As4 466    // Bb
+#define B4 494
+#define C5 523
+#define Cs5 554
+#define D5 587
+#define Ds5 622    // Eb5
+#define E5 659
+#define F5 698
+#define Fs5 740    // Gb5
+#define G5 784
+#define Gs5 831    // Ab5
+#define A5 880
+#define As5 932    // Bb5
+#define B5 988
+#define C6 1047
+
+// Durations at approximately 120 BPM
+#define WHOLE 2000
+#define HALF 1000
+#define QUARTER 500
+#define EIGHTH 250
+#define SIXTEENTH 125
+#define DOTTED_QUARTER 750
+#define DOTTED_EIGHTH 375
+
+// Small helper pauses
+#define SHORT_PAUSE 50
+#define MED_PAUSE 100
+#define LONG_PAUSE 200
+
+void musicf() {
+    init_speaker();
+    
+    // Measure 1 - Main melody line
+    speaker_play(As4); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(C5); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(D5); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(F5); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(D5); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(C5); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(As4); wait_ms(QUARTER); speaker_stop(); wait_ms(SHORT_PAUSE);
+    
+    // Measure 2 - Melody continuation
+    speaker_play(D5); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(F5); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(D5); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(C5); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(As4); wait_ms(QUARTER); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(F5); wait_ms(QUARTER); speaker_stop(); wait_ms(SHORT_PAUSE);
+    
+    // Measure 3 - Melodic phrase
+    speaker_play(G5); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(F5); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(E5); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(D5); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(C5); wait_ms(QUARTER); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(As4); wait_ms(QUARTER); speaker_stop(); wait_ms(SHORT_PAUSE);
+    
+    // Measure 4 - Second system melody
+    speaker_play(F5); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(D5); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(C5); wait_ms(QUARTER); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(G4); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(A4); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(As4); wait_ms(QUARTER); speaker_stop(); wait_ms(SHORT_PAUSE);
+    
+    // Measure 5 - Melodic development
+    speaker_play(D5); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(F5); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(As5); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(F5); wait_ms(EIGHTH); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(D5); wait_ms(QUARTER); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(C5); wait_ms(QUARTER); speaker_stop(); wait_ms(SHORT_PAUSE);
+    
+    // Measure 6 - Melodic line
+    speaker_play(As4); wait_ms(QUARTER); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(G4); wait_ms(QUARTER); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(F4); wait_ms(QUARTER); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(As4); wait_ms(QUARTER); speaker_stop(); wait_ms(SHORT_PAUSE);
+    
+    // Measure 7 - Phrase continuation
+    speaker_play(D5); wait_ms(QUARTER); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(C5); wait_ms(QUARTER); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(As4); wait_ms(QUARTER); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(G4); wait_ms(QUARTER); speaker_stop(); wait_ms(SHORT_PAUSE);
+    
+    // Measure 8 - Final phrase
+    speaker_play(As4); wait_ms(QUARTER); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(C5); wait_ms(QUARTER); speaker_stop(); wait_ms(SHORT_PAUSE);
+    speaker_play(F4); wait_ms(HALF); speaker_stop(); wait_ms(MED_PAUSE);
+    
+    // Final cadence
+    speaker_play(As4); wait_ms(WHOLE); speaker_stop(); wait_ms(LONG_PAUSE);
+    
+    speaker_stop();
 }
 
 void exitf() {
