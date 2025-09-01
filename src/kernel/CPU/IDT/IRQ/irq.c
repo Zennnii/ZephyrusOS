@@ -3,6 +3,7 @@
 #include "util.h"
 #include "drivers/PIT/pit.h"
 #include "drivers/PS2_Keyboard_Driver/keyboard.h"
+#include "drivers/ata/ata.h"
 
 #define PIC1_COMMAND 0x20
 #define PIC2_COMMAND 0xA0
@@ -50,7 +51,7 @@ void irq_install() {
     //setIdtGate(43, (uint32_t)irq11, 0x08, 0x8E);  // Free
     //setIdtGate(44, (uint32_t)irq12, 0x08, 0x8E);  // PS/2 Mouse
     //setIdtGate(45, (uint32_t)irq13, 0x08, 0x8E);  // FPU
-    //setIdtGate(46, (uint32_t)irq14, 0x08, 0x8E);  // Primary ATA
+    setIdtGate(46, (uint32_t)irq14, 0x08, 0x8E);  // Primary ATA
     //setIdtGate(47, (uint32_t)irq15, 0x08, 0x8E);  // Secondary ATA
 }
 
@@ -81,4 +82,10 @@ void irq8_handler() {
 
     // Send EOI to slave PIC
     send_eoi(8);  
+}
+
+struct InterruptRegisters* regs;
+
+void irq14_handler() {
+    ata_primary_isr(regs);
 }

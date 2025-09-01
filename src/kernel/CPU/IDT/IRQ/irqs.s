@@ -47,7 +47,7 @@ IRQ_STUB 8
 ;IRQ_STUB 11
 ;IRQ_STUB 12
 ;IRQ_STUB 13
-;IRQ_STUB 14
+IRQ_STUB 14
 ;IRQ_STUB 15
 
 section .note.GNU-stack noalloc noexec nowrite

@@ -3,6 +3,8 @@
 
  #include "stdint.h"
  #include "../idt.h"
+ #include "../isr.h"
+ #include "../interrupts.h"
 
 struct interruptRegisters {
     uint32_t edi;

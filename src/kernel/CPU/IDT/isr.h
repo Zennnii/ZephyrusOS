@@ -8,6 +8,7 @@
 #include "drivers/PIT/pit.h"
 #include "drivers/PS2_Keyboard_Driver/keyboard.h"
 #include "drivers/cmos_rtc/cmos_rtc.h"
+#include "drivers/ata/ata.h"
 
 // ISR array
 extern void (*isr_array[32])();

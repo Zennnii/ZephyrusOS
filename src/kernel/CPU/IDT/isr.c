@@ -47,6 +47,7 @@ void isr_handler(struct InterruptRegisters* regs) {
         case 32: irq0_handler(); break;
         case 33: keyboard_isr_handler(); break;
         case 40: rtc_isr_handler(); break;
+        case 46: ata_primary_isr(regs); break;
         default:
             if (regs->int_no < 32) {
                 exception_occurred = 1;
