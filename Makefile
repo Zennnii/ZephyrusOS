@@ -8,7 +8,7 @@ CFLAGS = -m32 -ffreestanding -fno-builtin -nostdlib -nostdinc \
 
 OBJS = kernel.o vga.o util.o gdt.o idt.o isr.o irq.o pit.o keyboard.o kmalloc.o \
        boot.o gdts.o idts.o irqs.o debug_tools.o cli.o string.o bcmds.o logf.o \
-       cmos_rtc.o bmcli.o bmcmds.o pcid.o
+       cmos_rtc.o bmcli.o bmcmds.o pcid.o speaker.o ata.o fat16.o 
 
 all: $(OBJS) image
 
@@ -81,6 +81,18 @@ bmcmds.o: src/kernel/CLI/bmcli/bmcmds/bmcmds.c
 pcid.o: src/kernel/CLI/pcid_cmds/pcid.c
 	gcc $(CFLAGS) -c src/kernel/CLI/pcid_cmds/pcid.c -o pcid.o
 
+#mouse.o: src/kernel/drivers/PS2_Mouse_Driver
+#	gcc $(CFLAGS) -c src/kernel/drivers/PS2_Mouse_Driver/mouse.c -o mouse.o 
+
+speaker.o: src/kernel/drivers/Speaker/speaker.c
+	gcc $(CFLAGS) -c src/kernel/drivers/Speaker/speaker.c -o speaker.o
+
+ata.o: src/kernel/drivers/ata/ata.c
+	gcc $(CFLAGS) -c src/kernel/drivers/ata/ata.c -o ata.o
+
+fat16.o: src/kernel/fs/fat16/fat16.c
+	gcc $(CFLAGS) -c src/kernel/fs/fat16/fat16.c -o fat16.o
+
 image: $(OBJS)
 	ld -m elf_i386 -T linker.ld $(OBJS) -o kernel_elf
 	mkdir -p Zephyrus/boot/grub
@@ -91,7 +103,17 @@ image: $(OBJS)
 	grub-mkrescue -o Zephyrus.iso Zephyrus
 
 riso:
-	qemu-system-i386 -cpu qemu32 Zephyrus.iso
+	qemu-system-i386 -cdrom Zephyrus.iso \
+	-hda disk.img \
+    -boot d \
+    -m 512M \
+    -audiodev pa,id=snd \
+    -machine pcspk-audiodev=snd
 
 rundebug:
-	qemu-system-i386 -cpu qemu32 -monitor stdio -d in_asm,cpu,int,guest_errors -D qemu.log -no-reboot Zephyrus.iso
+	qemu-system-i386 -cpu qemu32 -monitor stdio -d in_asm,cpu,int,guest_errors -D qemu.log -no-reboot -cdrom Zephyrus.iso \
+    -hda disk.img \
+    -boot d \
+    -m 512M \
+    -audiodev pa,id=snd \
+    -machine pcspk-audiodev=snd
