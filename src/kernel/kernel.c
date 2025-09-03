@@ -7,13 +7,13 @@
 #include "drivers/PS2_Keyboard_Driver/keyboard.h"
 #include "drivers/cmos_rtc/cmos_rtc.h"
 #include "drivers/Speaker/speaker.h"
-//#include "drivers/ata/ata.h"
+#include "drivers/ata/ata.h"
 #include "vga.h"
 #include "stdint.h"
 #include "debug_tools.h"
 #include "CLI/cli.h"
 #include "multiboot.h"
-//#include "fs/fat16/fat16.h"
+#include "fs/fat16/fat16.h"
 
 multiboot_info_t* mbi;
 
