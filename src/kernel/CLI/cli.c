@@ -35,11 +35,16 @@ void parse_args(char *input) {
     }
 }
 
+void draw_prompt() {
+    draw_string(fb, fb_width, 0, curLine, ">> ", colorWhite);
+}
+
 void cli() {
     cli_running = true;
 
     while (cli_running == true) {
-        print(">> ");
+        curX = 3;
+        draw_prompt();
         userIn[0] = '\0';
         buffer_flush();
         getline(userIn);
@@ -50,26 +55,41 @@ void cli() {
 void getline(char *out) {
     int len = 0;
 
+    draw_cursor(fb, fb_width, 0xFFFFFF);
+
     while (1) {
     char ch = keyboard_getchar();
 
-        if (ch == '\n') { // If enter
-            out[len] = '\0'; // Null terminate the string
-            newLine();
+    erase_cursor(fb, fb_width, 0x637a87);
+
+        if (ch == '\n') {
+            out[len] = '\0';
+
+            if (curLine + CHAR_H >= (int)fb_height - 28) {
+                clear(0x637a87);
+                // scroll_down(0x637a87);  // your background color
+            } else {
+                curLine += CHAR_H;
+            }
+
+            curX = 0;
             return;
         }
+
         else if (ch == '\b') {
             if (len > 0) {
             len--;
-            print("\b \b");
+            backspaceFB(fb, fb_width, 0x637a87);
             }
         }
         else {
             if (len < LINE_BUFFER_SIZE - 1) {
                 out[len++] = ch;
-                print_char(ch);
+                draw_char(fb, fb_width, curX, curLine, ch, colorWhite);
             }
         }
+
+        draw_cursor(fb, fb_width, 0xFFFFFF);
     }
 
 }
@@ -92,10 +112,10 @@ command_t commands[] = {
     {"panic", panicf},
     {"colors", colorsf},
     {"time", timef},
-    {"meminfo", meminfof},
     {"beep", beepf},
     {"music", musicf},
     {"rd", rdf},
+    {"regdump", regdumpf},
     {"exit", exitf},
     {NULL, NULL}
 };
@@ -112,5 +132,5 @@ void execute_command(char *userIn) {
             return;
         }
     }
-    print("Unknown command\n");
+    draw_string(fb, fb_width, 0, curLine, "Unknown command\n", colorWhite);
 }

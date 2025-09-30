@@ -1,5 +1,7 @@
 #include "cmos_rtc.h"
 
+int ctColor = 0xFFFFFFFF;
+
 static inline uint8_t cmos_read(uint8_t reg) {
     outb(0x70, reg);
     return inb(0x71);
@@ -52,23 +54,23 @@ void print_date_time() {
     rtc_time_t now;
     read_rtc(&now);
 
-    print("Time: ");
-    print_dec(now.year); print("/");
-    print_dec(now.mon);  print("/");
-    print_dec(now.day);  print(" ");
-    print_dec(now.hour); print(":");
-    print_dec(now.min);  print(":");
-    print_dec(now.sec);
-    newLine();
+    draw_string(fb, fb_width, 0, curLine, "Time: ", colorWhite);
+    draw_dec(now.year); draw_string(fb, fb_width, curX, curLine, "/", colorWhite);
+    draw_dec(now.mon);  draw_string(fb, fb_width, curX, curLine, "/", colorWhite);
+    draw_dec(now.day);  draw_string(fb, fb_width, curX, curLine, " ", colorWhite);
+    draw_dec(now.hour); draw_string(fb, fb_width, curX, curLine, ":", colorWhite);
+    draw_dec(now.min);  draw_string(fb, fb_width, curX, curLine, ":", colorWhite);
+    draw_dec(now.sec);
+    newLineFB();
 }
 
 void print_time_log() {
     rtc_time_t now;
     read_rtc(&now);
 
-    print_dec(now.hour); print(":");
-    print_dec(now.min); print(":");
-    print_dec(now.sec);
+    draw_dec(now.hour); draw_string(fb, fb_width, curX, curLine, ":", colorWhite);
+    draw_dec(now.min); draw_string(fb, fb_width, curX, curLine, ":", colorWhite);
+    draw_dec(now.sec);
 }
 
 void rtc_isr_handler() {

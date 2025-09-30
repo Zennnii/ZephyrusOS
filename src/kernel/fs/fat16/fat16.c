@@ -1,7 +1,9 @@
 #include "fat16.h"
 #include "drivers/ata/ata.h"
 #include "string.h"
-#include "vga.h"  // for debug printing
+
+// FAT16 present flag
+static bool fat_present = false;
 
 // Use static buffers to avoid stack overflow
 static uint8_t sector_buf[512];
@@ -15,38 +17,47 @@ static uint32_t data_start;
 
 // --- Helpers ---
 
-static void read_bpb(void) {
-    ata_read_sector(0, sector_buf);
+static bool read_bpb(void) {
+    // Read sector 0
+    if (ata_read_sector(0, sector_buf) != 0) return false;
 
-    // check boot signature 0x55AA
-    if (sector_buf[510] != 0x55 || sector_buf[511] != 0xAA) {
-        print("read_bpb: bad signature\n");
-        return; // bail out safely
+    uint32_t fat_lba_start = 0; // default to sector 0
+
+    // Check for MBR signature at 0x1FE
+    if (sector_buf[510] == 0x55 && sector_buf[511] == 0xAA) {
+        // Look at partition table entries
+        mbr_partition_t* part = (mbr_partition_t*)(sector_buf + 0x1BE);
+
+        for (int i = 0; i < 4; i++) {
+            if (part[i].type == 0x06 || part[i].type == 0x0E) { // FAT16
+                fat_lba_start = part[i].lba_first;
+                break;
+            }
+        }
     }
 
+    // If no partition table or no FAT16 found, fallback to superfloppy
+    // (BPB is at sector 0)
+    // fat_lba_start is already 0 if none found
+
+    // Read BPB sector
+    if (ata_read_sector(fat_lba_start, sector_buf) != 0) return false;
+
+    // Check boot sector signature
+    if (sector_buf[510] != 0x55 || sector_buf[511] != 0xAA) return false;
+
+    // Copy BPB
     memcpy(&bpb, sector_buf + 11, sizeof(bpb));
 
-    // quick sanity checks
-    if (bpb.bytes_per_sector != 512) {
-        print("BPB bytes/sector != 512: "); print_dec(bpb.bytes_per_sector);
-        return;
-    }
-    if (bpb.sectors_per_fat == 0 || bpb.root_entries == 0) {
-        print("\nBPB suspicious fields: ");
-        print("\nspf="); print_dec(bpb.sectors_per_fat);
-        print("\n root="); print_dec(bpb.root_entries);
+    if (bpb.bytes_per_sector != 512 || bpb.sectors_per_fat == 0 || bpb.root_entries == 0)
+        return false;
 
-        return;
-    }
-
-    fat_start  = bpb.reserved_sectors;
+    // Compute offsets relative to fat_lba_start
+    fat_start  = fat_lba_start + bpb.reserved_sectors;
     root_start = fat_start + (bpb.num_fats * bpb.sectors_per_fat);
     data_start = root_start + ((bpb.root_entries * 32) / 512);
 
-    print("\nBPB OK: fat_start="); print_dec(fat_start);
-    print("\nroot start="); print_dec(root_start);
-    print("\ndata_start="); print_dec(data_start);
-
+    return true;
 }
 
 static bool filename_match(dir_entry_t *entry, const char *name, const char *ext) {
@@ -57,26 +68,34 @@ static bool filename_match(dir_entry_t *entry, const char *name, const char *ext
 // --- Public API ---
 
 
-void fat16_init() {
+bool fat16_init() {
+    curX = 0;
+    draw_string(fb, fb_width, 0, curLine, "\nInitializing FAT16...\n", colorWhite);
+
+    fat_present = read_bpb();
+    if (!fat_present) {
+        draw_string(fb, fb_width, 0, curLine, "No FAT16 drive found, continuing in live mode...\n", colorWhite);
+    } else {
+        draw_string(fb, fb_width, 0, curLine, "FAT16 ready\n", colorWhite);
+    }
+
+    draw_string(fb, fb_width, 0, curLine, "BPB values:\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "\nBytes per sector: ", colorWhite); draw_dec(bpb.bytes_per_sector);
+    draw_string(fb, fb_width, 0, curLine, "\nSectors per cluster: ", colorWhite); draw_dec(bpb.sectors_per_cluster);
+    draw_string(fb, fb_width, 0, curLine, "\nReserved sectors: ", colorWhite); draw_dec(bpb.reserved_sectors);
+    draw_string(fb, fb_width, 0, curLine, "\nNum FATs: ", colorWhite); draw_dec(bpb.num_fats);
+    draw_string(fb, fb_width, 0, curLine, "\nRoot entries: ", colorWhite); draw_dec(bpb.root_entries);
+    draw_string(fb, fb_width, 0, curLine, "\nSectors per FAT: ", colorWhite); draw_dec(bpb.sectors_per_fat);
+
+    draw_string(fb, fb_width, 0, curLine, "\nFAT16 ready\n", colorWhite); newLineFB();
     
-    print("Initializing FAT16...\n");
-    read_bpb();
-    print("FAT16 ready\n");
-    print("Initializing FAT16...\n");
-
-    print("BPB values:\n");
-    print("\nBytes per sector: "); print_dec(bpb.bytes_per_sector);
-    print("\nSectors per cluster: "); print_dec(bpb.sectors_per_cluster);
-    print("\nReserved sectors: "); print_dec(bpb.reserved_sectors);
-    print("\nNum FATs: "); print_dec(bpb.num_fats);
-    print("\nRoot entries: "); print_dec(bpb.root_entries);
-    print("\nSectors per FAT: "); print_dec(bpb.sectors_per_fat);
-
-    print("\nFAT16 ready\n");
+    return fat_present;
 }
 
 // Reads a small file into out_buf; out_size will contain the file size
 bool fat16_read_file(const char *name, const char *ext, uint8_t *out_buf, uint32_t *out_size) {
+    if (!fat_present) return false; // live mode: no drive, skip
+
     dir_entry_t *dir = (dir_entry_t*) sector_buf;
 
     for (uint32_t s = 0; s < (bpb.root_entries * 32) / 512; s++) {

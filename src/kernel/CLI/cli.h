@@ -7,6 +7,8 @@
 #include "vga.h"
 #include "bcmds/bcmds.h"
 #include "pcid_cmds/pcid.h"
+#include "fb/dis.h"
+#include "fb/colors.h"
 
 #define LINE_BUFFER_SIZE 256
 #define MAX_ARGS 30
@@ -19,6 +21,7 @@ extern bool cli_running;
 
 void parse_args(char *input);
 void execute_command(char *userIn);
+void draw_prompt();
 void cli();
 void getline(char *out);
 

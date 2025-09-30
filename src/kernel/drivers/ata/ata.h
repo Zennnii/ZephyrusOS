@@ -2,7 +2,7 @@
 #define ATA_PIO_H
 
 #include "stdint.h"
-#include "util.h"
+#include "util/util.h"
 
 // ATA I/O ports for primary bus, master drive
 #define ATA_DATA       0x1F0

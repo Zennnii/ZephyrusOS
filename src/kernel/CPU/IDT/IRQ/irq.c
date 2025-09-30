@@ -1,6 +1,6 @@
 #include "irq.h"
 #include "../idt.h"
-#include "util.h"
+#include "util/util.h"
 #include "drivers/PIT/pit.h"
 #include "drivers/PS2_Keyboard_Driver/keyboard.h"
 #include "drivers/ata/ata.h"

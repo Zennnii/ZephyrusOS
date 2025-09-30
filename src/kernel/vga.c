@@ -1,48 +1,11 @@
 #include "vga.h"
-#include "util.h"
+#include "util/util.h"
 
 uint16_t column = 0;
 uint16_t line = 0;
 uint16_t* const vga = (uint16_t* const) 0xB8000;
 const uint16_t defaultColor = (COLOR8_WHITE << 8) | (COLOR8_BLACK << 12);
 uint16_t currentColor = defaultColor;
-
-void kernelPanic(const char* errorMessage, uint32_t errorCode) {
-    disableInterrupts();
-    // Set VGA panic colors: white text on red background
-    currentColor = (COLOR8_WHITE << 8) | (COLOR8_RED << 12);
-    vga_hide_cursor();
-
-    // Clear screen
-    line = 0;
-    column = 0;
-    for (uint16_t y = 0; y < height; y++) {
-        for (uint16_t x = 0; x < width; x++) {
-            vga[y * width + x] = ' ' | currentColor;
-        }
-    }
-
-    // Print panic header
-    print("KERNEL_PANIC\n");
-    
-    // Print error message
-    print("ERROR: ");
-    print(errorMessage);
-    newLine();
-
-    // Print error code in hex
-    print("ERROR_CODE: 0x");
-    print_hex(errorCode);
-    newLine();
-    newLine();
-
-    print(":(");
-
-    // Halt CPU forever
-    while (1) {
-        __asm__ volatile ("hlt");
-    }
-}
 
 uint16_t get_cursor_offset() {
     // Ask VGA controller for high byte of cursor pos

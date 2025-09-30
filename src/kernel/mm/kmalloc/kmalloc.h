@@ -3,7 +3,9 @@
 
 #include "stdint.h"
 #include "logf/logf.h"
-#include "util.h"
+#include "util/util.h"
+#include "fb/dis.h"
+#include "fb/colors.h"
 
 #define KERNEL_HEAP_START 0x01000000
 #define KERNEL_HEAP_SIZE  0x00180000  // 1.5 MB

@@ -22,8 +22,8 @@ void heap_init() {
     free_list->next = NULL;
 
     LOG_INFO("Initialized Heap");
-    LOG_INFO_NONL("Heap size: "); print_dec(heap_size);
-    newLine();
+    LOG_INFO_NONL("Heap size: "); draw_dec(heap_size);
+    newLineFB();
 }
 
 void* kmalloc(size_t size) {

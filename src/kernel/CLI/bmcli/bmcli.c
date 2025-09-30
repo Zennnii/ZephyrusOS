@@ -3,11 +3,12 @@
 bool bare_cli_running;
 
 void bare_cli() {
+    clear(0x637a87);
     cli_running = false;
     bare_cli_running = true;
 
     while (bare_cli_running) {
-        print("-> ");
+        draw_string(fb, fb_width, 0, curLine, "-> ", colorWhite);
         userIn[0] = '\0';
         buffer_flush();
         getline(userIn);
@@ -38,5 +39,5 @@ void execute_commandb(char *userIn) {
             return;
         }
     }
-    print("Unknown command\n");
+    draw_string(fb, fb_width, 0, curLine, "Unknown command\n", colorWhite);
 }

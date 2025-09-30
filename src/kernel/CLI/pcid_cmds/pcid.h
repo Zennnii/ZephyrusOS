@@ -4,7 +4,7 @@
 #include "multiboot.h"
 #include "vga.h"
 
-extern multiboot_info_t* mbi;
+//extern multiboot_info_t* mbi;
 
 void meminfof();
 

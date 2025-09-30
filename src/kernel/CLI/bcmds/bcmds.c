@@ -3,47 +3,50 @@
 char echoIn[LINE_BUFFER_SIZE];
 
 void echof(int argc, char *argv[]) {
+    curX = 0;
     for (int i = 1; i < argc; i++) {
-        print(argv[i]);
-        print(" ");
+        draw_string(fb, fb_width, curX, curLine, argv[i], colorWhite);
+        draw_string(fb, fb_width, curX, curLine, " ", colorWhite);
     }
-    newLine();
+    newLineFB();
 }
 
 void clearf() {
-    Reset();
+    clear(0x637a87);
+    draw_prompt();
 }
 
 void verf() {
-    print("Zephyrus OS [Version 1.0.8]");
-    newLine();
+    draw_string(fb, fb_width, 0, curLine, "Zephyrus OS [Version 1.2.0]", colorWhite);
+    newLineFB();
 }
 
 void helpf() {
-    print("echo <message>: Prints a message\n");
-    print("clear: Clears the screen\n");
-    print("ver: Shows the current version of Zephyrus OS\n");
-    print("help: Shows this message\n");
-    print("shutdown: Halts the CPU and allows you to turn of your PC safely (no ACPI yet)\n");
-    print("reboot: Reboots the computer\n");
-    print("uptime: Prints system uptime\n");
-    print("panic: Initiates a test kernel panic\n");
-    print("colors: Prints all the colors available\n");
-    print("time: Prints current date and time\n");
-    print("meminfo: Prints the amount of available system RAM\n");
-    print("beep <frequency> <duration>: Plays a certain frequency for a certain duration\n");
-    print("music: Plays a short song\n");
-    print("rd <file name> <file extension>: Prints the contents of a file\n");
-    print("exit: Exits kernel CLI (falls back to bare minimum CLI)\n");
+    draw_string(fb, fb_width, 0, curLine, "echo <message>: Prints a message\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "clear: Clears the screen\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "ver: Shows the current version of Zephyrus OS\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "help: Shows this message\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "shutdown: Halts the CPU and allows you to turn of your PC safely (no ACPI yet)\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "reboot <delay>: Reboots the computer (delay argument is optional)\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "uptime: Prints system uptime\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "panic: Initiates a test kernel panic\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "colors: Prints all the colors available\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "time: Prints current date and time\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "meminfo: Prints the amount of available system RAM\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "beep <frequency> <duration>: Plays a certain frequency for a certain duration\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "music: Plays a short song\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "rd <file name> <file extension>: Prints the contents of a file\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "regdump: Dumps register values\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "exit: Exits kernel CLI (falls back to bare minimum CLI)\n", colorWhite);
 }
 
 void shutdownf() {
     wait(3);
-    Reset();
+    clear(0x637a87);
     wait(2);
 
     Reset();
-    print("It's now safe to turn off your computer\n");
+    draw_string(fb, fb_width, 0, curLine, "It's now safe to turn off your computer\n", colorWhite);
     vga_hide_cursor();
 
     // Disables interrupts (cli)
@@ -58,15 +61,29 @@ void shutdownf() {
 // Reboots the computer via 8042
 void reboot8042() {
     cli_running = false;
-    wait(2);
-    Reset();
-    wait(3);
-    print("Rebooting...");
-    vga_hide_cursor();
-    wait(2);
+    if (argc < 2) {
+        wait(1);
+        clear(0x637a87);
+        LOG_INFO("Rebooting system...");
+        wait(2);
 
-    // Pulse the reset line through the keyboard controller
-    outb(0x64, 0xFE); // 8042 reset command
+        // Pulse the reset line through the keyboard controller
+        outb(0x64, 0xFE); // 8042 reset command
+    }
+
+    uint32_t timer = atoi(argv[1]);
+
+    if (argv[1] > 0) {
+        wait(1);
+        LOG_INFO_NONL("Sytem reboot scheduled to initiate after "); draw_dec(timer); draw_string(fb, fb_width, curX, curLine, " seconds\n", colorWhite);
+        wait(timer);
+        clear(0x637a87);
+        LOG_INFO("Rebooting system...");
+        wait(1);
+
+        // Pulse the reset line through the keyboard controller
+        outb(0x64, 0xFE); // 8042 reset command
+    }
 
     // If rebooting fails, halt indefinitely
     while (1) {
@@ -76,12 +93,13 @@ void reboot8042() {
 }
 
 void uptimef() {
-    print_dec(sys_uptime);
-    newLine();
+    curX = 0;
+    draw_dec(sys_uptime);
+    newLineFB();
 }
 
 void panicf() {
-    print("This command will initiate a kernel panic are you sure [y/n]: ");
+    draw_string(fb, fb_width, 0, curLine, "This command will initiate a kernel panic are you sure [y/n]: ", colorWhite);
     getline(userIn);
     if (strcmp(userIn, "y") == 0) {
         wait(2);
@@ -130,7 +148,7 @@ void beepf(int argc, char *argv[]) {
 void rdf(int argc, char **argv) {
     
     if (argc < 3) {
-        print("Usage: rdf <filename> <ext>\n");
+        draw_string(fb, fb_width, curX, curLine,"Usage: rdf <filename> <ext>\n", colorWhite);
         return;
     }
 
@@ -167,11 +185,15 @@ void rdf(int argc, char **argv) {
     }
 
     if (fat16_read_file(name, ext, buffer, &size)) {
-        print(buffer);
-        newLine();
+        draw_string(fb, fb_width, 0, curLine, buffer, 0xFFFFFFFF);
+        newLineFB();
     } else {
-        print("Error: File not found\n");
+        draw_string(fb, fb_width, curX, curLine,"Error: File not found\n", colorWhite);
     }
+}
+
+void regdumpf() {
+    print_current_cpu_state();
 }
 
 // Frequency table (approximate, integer Hz)

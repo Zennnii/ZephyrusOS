@@ -10,21 +10,71 @@
 #include "drivers/ata/ata.h"
 #include "vga.h"
 #include "stdint.h"
-#include "debug_tools.h"
+#include "debug/debug_tools.h"
 #include "CLI/cli.h"
 #include "multiboot.h"
 #include "fs/fat16/fat16.h"
+#include "fb/dis.h"
 
-multiboot_info_t* mbi;
+uint32_t fb_pitch = 0;
+uint32_t fb_pitch_pixels = 0;
+uint32_t *pixels = NULL;
+
+static inline uint32_t align8(uint32_t v) { return (v + 7) & ~7; }
 
 void kmain(uint32_t multiboot_info_addr) {
 
     // Ensure interrupts are disabled during critical setup
     __asm__ volatile("cli");
     
-    mbi = (multiboot_info_t*)multiboot_info_addr;
+    struct multiboot_tag *tag;
+    uint8_t *addr = (uint8_t*)multiboot_info_addr;
 
-    Reset();
+    // First pass: find framebuffer and set globals
+    struct multiboot_tag_framebuffer *fb_tag = NULL;
+    for (tag = (struct multiboot_tag*)(addr + 8);
+         tag->type != 0;
+         tag = (struct multiboot_tag*)((uint8_t*)tag + align8(tag->size))) {
+
+        switch (tag->type) {
+        case 6: { // memory map
+            struct multiboot_tag_mmap *mmap = (struct multiboot_tag_mmap*)tag;
+            uint32_t count = (mmap->size - sizeof(*mmap)) / mmap->entry_size;
+
+            for (uint32_t i = 0; i < count; i++) {
+                struct multiboot_mmap_entry *e =
+                    (struct multiboot_mmap_entry*)((uint8_t*)mmap->entries + i * mmap->entry_size);
+
+                // Example: log usable regions
+                if (e->type == 1) {
+                    // available RAM
+                    // e->addr = base, e->len = length
+                }
+            }
+            break;
+        }
+        case 8: { // framebuffer
+            fb_tag = (struct multiboot_tag_framebuffer*)tag;
+            
+            // Set up global framebuffer variables
+            fb = (uint32_t*)(uintptr_t)fb_tag->addr;
+            fb_width = fb_tag->widthfb;
+            fb_height = fb_tag->heightfb;
+            fb_pitch = fb_tag->pitch;
+            fb_pitch_pixels = fb_tag->pitch / 4;
+            pixels = fb;
+            
+            // Clear screen to black
+            for (uint32_t y = 0; y < fb_height; y++) {
+                for (uint32_t x = 0; x < fb_width; x++) {
+                    pixels[y * fb_pitch_pixels + x] = 0x00000000;
+                }
+            }
+            break;
+        }
+        }
+    }
+
 
     // Phase 1: Core CPU Setup (interrupts disabled)
     LOG_LOAD("Initializing GDT...");
@@ -75,10 +125,19 @@ void kmain(uint32_t multiboot_info_addr) {
     wait(2);
     Reset();
 
-    print("Welcome to "); 
-    printcol("Zephyrus", COLOR8_LIGHT_BLUE); 
-    print("!\n");
-    newLine();
+    for (uint32_t y = 0; y < fb_height; y++) {
+        for (uint32_t x = 0; x < fb_width; x++) {
+            pixels[y * fb_pitch_pixels + x] = 0x637a87;
+        }
+    }
+
+    if (fb_tag) {
+        curLine = 0; // reset line counter at boot
+
+        draw_string(fb, fb_width, 0, 0, "Zephyrus OS\n", 0xFFFFFFFF);
+        draw_string(fb, fb_width, 0, 0, "Version 1.2.0\n", 0xFFFFFFFF);
+        draw_string(fb, fb_width, 0, curLine, "\n", 0xFF234FFF);
+    }
 
     // Phase 6: Main kernel loop
     cli();

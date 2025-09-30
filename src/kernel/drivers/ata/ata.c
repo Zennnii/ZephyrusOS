@@ -12,9 +12,13 @@
 
 #define ATA_CMD_READ  0x20
 
+#define ATA_CMD_WRITE 0x30
+
 #define PIC1_COMMAND  0x20
 #define PIC2_COMMAND  0xA0
 #define PIC_EOI       0x20
+
+static bool ata_drive_present = false;
 
 // Wait until BSY clears
 static void ata_wait_bsy() {
@@ -38,15 +42,29 @@ static int ata_wait_ready() {
 
 volatile uint16_t *ata_buffer = 0;
 volatile int ata_ready = 0;
+volatile const uint16_t *ata_wbuffer = 0;  // write buffer
+volatile int ata_done = 0;                 // set by ISR when operation completes
+volatile int ata_mode = 0;                 // 0 = read, 1 = write
 
 void ata_primary_isr(struct InterruptRegisters* regs) {
     uint8_t status = inb(ATA_STATUS);
 
-    if (status & 0x08) { // DRQ set
-        if (ata_buffer) {
-            for (int i = 0; i < 256; i++)
-                ata_buffer[i] = inw(ATA_DATA);
-            ata_ready = 1;
+    if (status == 0xFF) {
+        // Drive is missing
+        ata_drive_present = false;
+        return;
+    }
+    ata_drive_present = true;
+    
+
+    if (ata_mode == 0) { // READ mode
+        if (status & 0x08) { // DRQ
+            if (ata_buffer) {
+                for (int i = 0; i < 256; i++)
+                    ata_buffer[i] = inw(ATA_DATA);
+                ata_done = 1;
+                ata_ready = 1;
+            }
         }
     }
 
@@ -55,6 +73,8 @@ void ata_primary_isr(struct InterruptRegisters* regs) {
 }
 
 int ata_read_sector(uint32_t lba, uint8_t *buffer) {
+    if (!ata_drive_present) return -1; // Skip reads if no drive
+
     ata_buffer = (uint16_t*)buffer;
     ata_ready = 0;
 
@@ -79,4 +99,34 @@ int ata_read_sector(uint32_t lba, uint8_t *buffer) {
 
     if (!ata_ready) return -2; // timeout
     return 0; // success
+}
+
+int ata_write_sector(uint32_t lba, const uint8_t *buffer) {
+    // Cast buffer to 16-bit words (ATA PIO requires 256 words per sector)
+    const uint16_t *buf16 = (const uint16_t*)buffer;
+    
+    // Wait until drive is ready
+    if (ata_wait_ready() < 0) return -1; // drive error
+
+    outb(ATA_SECCOUNT, 1); // write 1 sector
+    outb(ATA_LBA_LO,  lba & 0xFF);
+    outb(ATA_LBA_MID, (lba >> 8) & 0xFF);
+    outb(ATA_LBA_HI,  (lba >> 16) & 0xFF);
+    outb(ATA_DRIVE,   0xE0 | ((lba >> 24) & 0x0F));
+
+    // Send WRITE SECTOR command
+    outb(ATA_CMD, ATA_CMD_WRITE);
+
+    // Wait until drive requests data (DRQ = 1)
+    ata_wait_bsy();
+    ata_wait_drq();
+
+    // Transfer 256 words (512 bytes)
+    for (int i = 0; i < 256; i++) {
+        outw(ATA_DATA, buf16[i]);
+    }
+
+    if (ata_wait_ready() < 0) return -2;
+
+    return 0;
 }

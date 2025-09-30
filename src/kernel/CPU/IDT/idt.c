@@ -1,5 +1,5 @@
 #include "idt.h"
-#include "util.h"
+#include "util/util.h"
 
 extern void idt_flush(uint32_t);
 

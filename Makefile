@@ -1,14 +1,15 @@
 .PHONY: all clean riso rundebug
 
 clean:
-	rm -rf *.o kernel_elf Zephyrus.iso Zephyrus/
+	rm -rf *.o kernel_elf Zephyrus.iso
 
 CFLAGS = -m32 -ffreestanding -fno-builtin -nostdlib -nostdinc \
-         -Iinclude -Isrc/kernel -Isrc/libs -Isrc/includes
+         -Iinclude -Isrc/kernel -Isrc/libs -Isrc/includes \
+		 -fno-asynchronous-unwind-tables -fno-exceptions -fno-unwind-tables
 
 OBJS = kernel.o vga.o util.o gdt.o idt.o isr.o irq.o pit.o keyboard.o kmalloc.o \
        boot.o gdts.o idts.o irqs.o debug_tools.o cli.o string.o bcmds.o logf.o \
-       cmos_rtc.o bmcli.o bmcmds.o pcid.o speaker.o ata.o fat16.o 
+       cmos_rtc.o bmcli.o bmcmds.o speaker.o ata.o fat16.o dis.o colors.o panic.o
 
 all: $(OBJS) image
 
@@ -18,8 +19,8 @@ kernel.o: src/kernel/kernel.c
 vga.o: src/kernel/vga.c
 	gcc  $(CFLAGS) -c src/kernel/vga.c -o vga.o
 
-util.o: src/kernel/util.c
-	gcc  $(CFLAGS) -c src/kernel/util.c -o util.o
+util.o: src/kernel/util/util.c
+	gcc  $(CFLAGS) -c src/kernel/util/util.c -o util.o
 
 gdt.o: src/kernel/CPU/GDT/gdt.c
 	gcc $(CFLAGS) -c src/kernel/CPU/GDT/gdt.c -o gdt.o
@@ -54,8 +55,8 @@ idts.o: src/kernel/CPU/IDT/idts.s
 irqs.o: src/kernel/CPU/IDT/IRQ/irqs.s
 	nasm -f elf32 src/kernel/CPU/IDT/IRQ/irqs.s -o irqs.o
 
-debug_tools.o: src/kernel/debug_tools.c
-	gcc $(CFLAGS) -c src/kernel/debug_tools.c -o debug_tools.o
+debug_tools.o: src/kernel/debug/debug_tools.c
+	gcc $(CFLAGS) -c src/kernel/debug/debug_tools.c -o debug_tools.o
 
 cli.o: src/kernel/CLI/cli.c
 	gcc $(CFLAGS) -c src/kernel/CLI/cli.c -o cli.o
@@ -81,9 +82,6 @@ bmcmds.o: src/kernel/CLI/bmcli/bmcmds/bmcmds.c
 pcid.o: src/kernel/CLI/pcid_cmds/pcid.c
 	gcc $(CFLAGS) -c src/kernel/CLI/pcid_cmds/pcid.c -o pcid.o
 
-#mouse.o: src/kernel/drivers/PS2_Mouse_Driver
-#	gcc $(CFLAGS) -c src/kernel/drivers/PS2_Mouse_Driver/mouse.c -o mouse.o 
-
 speaker.o: src/kernel/drivers/Speaker/speaker.c
 	gcc $(CFLAGS) -c src/kernel/drivers/Speaker/speaker.c -o speaker.o
 
@@ -92,14 +90,20 @@ ata.o: src/kernel/drivers/ata/ata.c
 
 fat16.o: src/kernel/fs/fat16/fat16.c
 	gcc $(CFLAGS) -c src/kernel/fs/fat16/fat16.c -o fat16.o
+	
+dis.o: src/kernel/fb/dis.c
+	gcc $(CFLAGS) -c src/kernel/fb/dis.c -o dis.o
+
+colors.o: src/kernel/fb/colors.c
+	gcc $(CFLAGS) -c src/kernel/fb/colors.c -o colors.o
+
+panic.o: src/kernel/panic/panic.c
+	gcc $(CFLAGS) -c src/kernel/panic/panic.c -o panic.o
 
 image: $(OBJS)
-	ld -m elf_i386 -T linker.ld $(OBJS) -o kernel_elf
+	ld -m elf_i386 -T linker.ld boot.o $(filter-out boot.o,$(OBJS)) -o kernel_elf
 	mkdir -p Zephyrus/boot/grub
 	cp kernel_elf Zephyrus/boot/kernel_elf
-	echo 'menuentry "Zephyrus OS" {' > Zephyrus/boot/grub/grub.cfg
-	echo '    multiboot /boot/kernel_elf' >> Zephyrus/boot/grub/grub.cfg
-	echo '}' >> Zephyrus/boot/grub/grub.cfg
 	grub-mkrescue -o Zephyrus.iso Zephyrus
 
 riso:

@@ -3,12 +3,12 @@
 
 #include "idt.h"
 #include "interrupts.h"
-#include "vga.h"
-#include "util.h"
+#include "util/util.h"
 #include "drivers/PIT/pit.h"
 #include "drivers/PS2_Keyboard_Driver/keyboard.h"
 #include "drivers/cmos_rtc/cmos_rtc.h"
 #include "drivers/ata/ata.h"
+#include "panic/panic.h"
 
 // ISR array
 extern void (*isr_array[32])();

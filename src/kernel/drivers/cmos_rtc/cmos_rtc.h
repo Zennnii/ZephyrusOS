@@ -2,9 +2,11 @@
 #define CMOS_RTC_H
 
 #include "stdint.h"
-#include "util.h"
+#include "util/util.h"
 #include "vga.h"
 #include "logf/logf.h"
+#include "fb/dis.h"
+#include "fb/colors.h"
 
 static inline uint8_t cmos_read(uint8_t reg);
 static inline int rtc_update_in_progress(void);

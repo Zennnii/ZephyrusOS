@@ -2,7 +2,7 @@
 #define PIT_H
 
 #include "stdint.h"
-#include "util.h"
+#include "util/util.h"
 #include "logf/logf.h"
 
 void pit_set_frequency(uint32_t hz);
