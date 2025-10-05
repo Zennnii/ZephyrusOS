@@ -8,7 +8,7 @@ This project is ongoing.
 ## Current Features
 
 - **Core kernel**
-  - VGA text output: print strings, characters, hex values, newline, carriage return, scrolling  
+  - Text output: print strings, characters, hex values, newline, carriage return, scrolling  
   - Global Descriptor Table (GDT) implementation  
   - Interrupt Descriptor Table (IDT) with basic exception handling  
   - Kernel panic handling (fatal error reporting)  
@@ -27,18 +27,21 @@ This project is ongoing.
 - **Kernel shell (CLI)**
   - Command parsing with argument support  
   - Built-in commands (e.g. `echo`, `help`, `time`, etc.)  
-  - `meminfo` command (prints available system RAM)  
+  - `meminfo` command (prints available system RAM) **NOTE: CURRENTLY DOSENT WORK** 
   - `rd` command (prints the contents of a file)
   - Additional internal commands and fallback CLI  
 
 - **Bootloader**
-  - GRUB multiboot-compliant header in `boot.s`
+  - GRUB multiboot2-compliant header in `boot.s`
+
+- **Graphics**
+  - Using a Framebuffer (GRUB's gfx payload)
 
 ---
 
 ## Screenshots
 
-![Current progress](Screenshots/currentProgress.png)
+![Current progress](Screenshots/currentProgress2.png)
 
 ---
 
@@ -48,6 +51,8 @@ This project is ongoing.
 - Write support 
 - Paging  
 - Additional device drivers (COM, PS/2 Mouse) 
+- Simple line drawing and drawing simple geometric shapes
+- Expand font rendering (Currently limited to only a 8x8 font)
 
 ---
 
