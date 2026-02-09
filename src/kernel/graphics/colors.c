@@ -1,4 +1,4 @@
-#include "colors.h"
+#include "gfx.h"
 
 const uint32_t colorWhite = 0xFFFFFFFF;
 const uint32_t colorRed = 0xff0000;

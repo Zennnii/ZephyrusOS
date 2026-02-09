@@ -21,22 +21,24 @@ static inline uint8_t inb(uint16_t port) {
     __asm__ volatile ("inb %1, %0" : "=a"(ret) : "dN"(port));
     return ret;
 }
-void enableInterrupts();
 
+// I/O wait function
+static inline void io_wait(void) {
+    outb(0x80, 0);
+}
+
+void enableInterrupts();
 void disableInterrupts();
 
 void wait(uint32_t sec);
-
 void wait_ms(uint32_t ms);
 
 int atoi(const char *s);
 
 uint16_t inw(uint16_t port);
-
 void outw(uint16_t port, uint16_t val);
 
 void insw(uint16_t port, void *addr, int count);
-
 void outsw(uint16_t port, const void *addr, int count);
 
 #endif

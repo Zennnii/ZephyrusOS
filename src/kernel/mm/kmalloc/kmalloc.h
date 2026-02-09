@@ -2,10 +2,6 @@
 #define KMALLOC_H
 
 #include "stdint.h"
-#include "logf/logf.h"
-#include "util/util.h"
-#include "fb/dis.h"
-#include "fb/colors.h"
 
 #define KERNEL_HEAP_START 0x01000000
 #define KERNEL_HEAP_SIZE  0x00180000  // 1.5 MB
@@ -13,6 +9,14 @@
 
 static uintptr_t heap_start;
 static uintptr_t heap_end;
+
+typedef struct block_header {
+    uint32_t magic;
+    size_t size;
+    int free;
+    struct block_header *next;
+    struct block_header *prev;
+} block_header_t;
 
 void heap_init();
 

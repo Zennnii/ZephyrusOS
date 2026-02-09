@@ -73,6 +73,15 @@ void print_time_log() {
     draw_dec(now.sec);
 }
 
+void serial_write_time_log() {
+    rtc_time_t now;
+    read_rtc(&now);
+
+    serial_write_int(now.hour); serial_write_char(':');
+    serial_write_int(now.min); serial_write_char(':');
+    serial_write_int(now.sec);
+}
+
 void rtc_isr_handler() {
     outb(0x70, 0x0C);
     inb(0x71);
@@ -82,5 +91,5 @@ void init_rtc() {
     outb(0x70, 0x0C);
     inb(0x71);
 
-    LOG_INFO("CMOS RTC Initialized Successfully");
+    //LOG_INFO("CMOS RTC Initialized Successfully");
 }

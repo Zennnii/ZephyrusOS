@@ -21,8 +21,8 @@
 #define COLOR8_WHITE 15
 
 
-#define width 80
-#define height 25
+#define widthv 80
+#define heightv 25
 
 
 #define VGA_CONTROL_PORT 0x3D4
@@ -41,7 +41,6 @@ void get_cursor_position(int* x, int* y);
 uint16_t get_cursor_offset();
 void vga_hide_cursor(void);
 void vga_show_cursor(void);
-//void kernelPanic(const char* errorMessage, uint32_t errorCode);
 void printCharCol(char c, uint16_t col);
 void printcol(const char* s, uint16_t color);
 

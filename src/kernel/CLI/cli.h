@@ -7,8 +7,7 @@
 #include "vga.h"
 #include "bcmds/bcmds.h"
 #include "pcid_cmds/pcid.h"
-#include "fb/dis.h"
-#include "fb/colors.h"
+#include "gfx.h"
 
 #define LINE_BUFFER_SIZE 256
 #define MAX_ARGS 30

@@ -1,10 +1,4 @@
-#include "dis.h"
-#include "colors.h"
-
-// global framebuffer state
-uint32_t *fb = 0;
-uint32_t fb_width = 0;
-uint32_t fb_height = 0;
+#include "gfx.h"
 
 int cursor_x = 0;
 int cursor_y = 0;

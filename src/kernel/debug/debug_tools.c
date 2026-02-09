@@ -1,7 +1,6 @@
 #include "debug_tools.h"
 #include "CPU/IDT/interrupts.h"
 #include "mm/kmalloc/kmalloc.h"
-#include "vga.h"
 
 void print_current_cpu_state() {
     uint32_t eax, ebx, ecx, edx, esi, edi, esp, ebp;
@@ -105,7 +104,7 @@ void test_kmalloc() {
         void *ptr = kmalloc(128);
         if (!ptr) {
             draw_string(fb, fb_width, curX, curLine, "Heap exhausted after: ", colorWhite);
-            print_dec(count);
+            draw_dec(count);
             draw_string(fb, fb_width, curX, curLine, " allocations.\n", colorWhite);
             break;
         }
@@ -113,4 +112,56 @@ void test_kmalloc() {
     }
 
     draw_string(fb, fb_width, curX, curLine, "===== Test complete =====\n", colorWhite);
+}
+
+void test_heap_magic_corruption(void) {
+    char *p = kmalloc(8);
+    // Write backwards into header
+    p[-4] = 0x41;
+}
+
+void test_heap_invalid_size(void) {
+    char *p = kmalloc(16);
+    block_header_t *h = (block_header_t *)p - 1;
+    h->size = 0;
+}
+
+void test_heap_bad_next(void) {
+    char *a = kmalloc(16);
+    char *b = kmalloc(16);
+
+    block_header_t *ha = (block_header_t *)a - 1;
+    block_header_t *hb = (block_header_t *)b - 1;
+
+    hb->prev = NULL; // corrupt backward link
+}
+
+void test_heap_bad_prev(void) {
+    char *a = kmalloc(16);
+    char *b = kmalloc(16);
+
+    block_header_t *hb = (block_header_t *)b - 1;
+    hb->prev = NULL; // or garbage pointer
+}
+
+void test_heap_overflow(void) {
+    char *p = kmalloc(8);
+    for (int i = 0; i < 64; i++) {
+        p[i] = 0xAA; // overwrite into next block
+    }
+}
+
+void test_heap_double_free(void) {
+    void *p = kmalloc(32);
+    kfree(p);
+    kfree(p);
+}
+
+void heap_selftest(void) {
+    //test_heap_magic_corruption();
+    //test_heap_invalid_size();
+    //test_heap_bad_next();
+    //test_heap_bad_prev();
+    //test_heap_overflow();
+    //test_heap_double_free();
 }

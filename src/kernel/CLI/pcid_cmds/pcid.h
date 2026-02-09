@@ -2,9 +2,8 @@
 #define PCID_H
 
 #include "multiboot.h"
-#include "vga.h"
-
-//extern multiboot_info_t* mbi;
+#include "init.h"
+#include "drivers/com_1/com_1.h"
 
 void meminfof();
 

@@ -2,10 +2,12 @@
 #define FAT16_H
 
 #include "stdint.h"
-#include "fb/dis.h"
-#include "fb/colors.h"
+#include "gfx.h"
+#include "drivers/com_1/com_1.h"
 
 #define SECTOR_SIZE 512
+
+extern bool fat_present;
 
 /* BPB and dir_entry definitions (packed) */
 typedef struct __attribute__((packed)) {

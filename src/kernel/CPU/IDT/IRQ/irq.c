@@ -41,7 +41,7 @@ void irq_install() {
     setIdtGate(33, (uint32_t)irq1, 0x08, 0x8E);   // Keyboard
     //setIdtGate(34, (uint32_t)irq2, 0x08, 0x8E);   // Cascade
     //setIdtGate(35, (uint32_t)irq3, 0x08, 0x8E);   // COM2/4
-    //setIdtGate(36, (uint32_t)irq4, 0x08, 0x8E);   // COM1/3
+    setIdtGate(36, (uint32_t)irq4, 0x08, 0x8E);   // COM1/3
     //setIdtGate(37, (uint32_t)irq5, 0x08, 0x8E);   // LPT2
     //setIdtGate(38, (uint32_t)irq6, 0x08, 0x8E);   // Floppy
     //setIdtGate(39, (uint32_t)irq7, 0x08, 0x8E);   // LPT1
@@ -71,6 +71,10 @@ void irq0_handler() {
 void irq1_handler() {
     keyboard_isr_handler();
     send_eoi(1);
+}
+
+void irq4_handler() {
+    serial_init();
 }
 
 void irq8_handler() {

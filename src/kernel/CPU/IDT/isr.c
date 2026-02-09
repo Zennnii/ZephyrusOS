@@ -62,9 +62,9 @@ void check_exceptions() {
     if (!exception_occurred) return;
 
     switch (last_exception_code) {
-        case 0: kernelPanic("Divide By Zero Exception", last_error_code); break;
-        case 13: kernelPanic("General Protection Fault", last_error_code); break;
-        case 14: kernelPanic("Page Fault", last_error_code); break;
-        default: kernelPanic("Unknown Exception", last_exception_code); break;
+        case 0: panic("Divide By Zero Exception", last_error_code); break;
+        case 13: panic("General Protection Fault", last_error_code); break;
+        case 14: panic("Page Fault", last_error_code); break;
+        default: panic("Unknown Exception", last_exception_code); break;
     }
 }

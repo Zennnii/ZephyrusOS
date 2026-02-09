@@ -1,11 +1,6 @@
-;======================================================
-; boot.s - Minimal GRUB Multiboot2 Bootstub
-;======================================================
+; boot.s - Multiboot2 stub (with framebuffer + module support)
 BITS 32
 
-; ---------------------------
-; Multiboot2 Header (must be in first 8 KiB)
-; ---------------------------
 section .multiboot2
 align 8
 
@@ -26,47 +21,46 @@ header_start:
     dd 20             ; size of this tag
     dd 1024           ; width
     dd 768            ; height
-    dd 32             ; bpp
+    dd 32             ; bits per pixel
 
     align 8
 
-    ; --- End tag (type 0) ---
+    ; --- End tag ---
     dw 0
     dw 0
     dd 8
 header_end:
-; ---------------------------
-; Code section
-; ---------------------------
+
+; Code
 section .text
 global start
 extern kmain
+global multiboot_info_addr  ; expose GRUB pointer for C code
 
 start:
-    ; Setup stack
     mov esp, stack_top
 
-    ; Pass Multiboot2 info pointer to kernel
-    push ebx
+    ; Store GRUB Multiboot2 info pointer
+    mov [multiboot_info_addr], ebx
 
-    ; Call kernel main
+    push ebx
     call kmain
 
-HaltKernel:
+.hang:
     cli
     hlt
-    jmp HaltKernel
+    jmp .hang
 
-; ---------------------------
-; BSS (stack)
-; ---------------------------
+; Data section (for the global)
+section .data
+align 4
+multiboot_info_addr: dd 0
+
+; Stack
 section .bss
 align 16
 stack_bottom:
     resb 16384         ; 16 KiB stack
 stack_top:
 
-; ---------------------------
-; Avoid GNU stack
-; ---------------------------
 section .note.GNU-stack noalloc noexec nowrite

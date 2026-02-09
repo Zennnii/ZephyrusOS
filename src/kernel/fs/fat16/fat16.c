@@ -3,7 +3,7 @@
 #include "string.h"
 
 // FAT16 present flag
-static bool fat_present = false;
+bool fat_present = false;
 
 // Use static buffers to avoid stack overflow
 static uint8_t sector_buf[512];
@@ -69,26 +69,15 @@ static bool filename_match(dir_entry_t *entry, const char *name, const char *ext
 
 
 bool fat16_init() {
-    curX = 0;
-    draw_string(fb, fb_width, 0, curLine, "\nInitializing FAT16...\n", colorWhite);
-
-    fat_present = read_bpb();
-    if (!fat_present) {
-        draw_string(fb, fb_width, 0, curLine, "No FAT16 drive found, continuing in live mode...\n", colorWhite);
+    if (!ata_drive_present) {
+        LOG_INFO("No FAT16 drive found, continuing in live mode...");
+        return 1;
     } else {
-        draw_string(fb, fb_width, 0, curLine, "FAT16 ready\n", colorWhite);
+        LOG_INFO("FAT16 ready");
     }
 
-    draw_string(fb, fb_width, 0, curLine, "BPB values:\n", colorWhite);
-    draw_string(fb, fb_width, 0, curLine, "\nBytes per sector: ", colorWhite); draw_dec(bpb.bytes_per_sector);
-    draw_string(fb, fb_width, 0, curLine, "\nSectors per cluster: ", colorWhite); draw_dec(bpb.sectors_per_cluster);
-    draw_string(fb, fb_width, 0, curLine, "\nReserved sectors: ", colorWhite); draw_dec(bpb.reserved_sectors);
-    draw_string(fb, fb_width, 0, curLine, "\nNum FATs: ", colorWhite); draw_dec(bpb.num_fats);
-    draw_string(fb, fb_width, 0, curLine, "\nRoot entries: ", colorWhite); draw_dec(bpb.root_entries);
-    draw_string(fb, fb_width, 0, curLine, "\nSectors per FAT: ", colorWhite); draw_dec(bpb.sectors_per_fat);
+    fat_present = read_bpb();
 
-    draw_string(fb, fb_width, 0, curLine, "\nFAT16 ready\n", colorWhite); newLineFB();
-    
     return fat_present;
 }
 

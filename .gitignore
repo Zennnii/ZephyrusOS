@@ -4,7 +4,9 @@
 *.iso
 # Ignore specific files
 kernel_elf
-# Ignore .py files
-*.py
+vga.c
+vga.h
+# Ignore boot logs
+BOOTLOG
 # Ignore .img files
 *.img

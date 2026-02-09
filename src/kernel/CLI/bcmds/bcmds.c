@@ -1,4 +1,14 @@
 #include "bcmds.h"
+#include "../cli.h"
+#include "util/util.h"
+#include "drivers/PIT/pit.h"
+#include "drivers/cmos_rtc/cmos_rtc.h"
+#include "../bmcli/bmcli.h"
+#include "drivers/Speaker/speaker.h"
+#include "fs/fat16/fat16.h"
+#include "gfx.h"
+#include "panic/panic.h"
+#include "debug/debug_tools.h"
 
 char echoIn[LINE_BUFFER_SIZE];
 
@@ -22,22 +32,21 @@ void verf() {
 }
 
 void helpf() {
-    draw_string(fb, fb_width, 0, curLine, "echo <message>: Prints a message\n", colorWhite);
-    draw_string(fb, fb_width, 0, curLine, "clear: Clears the screen\n", colorWhite);
-    draw_string(fb, fb_width, 0, curLine, "ver: Shows the current version of Zephyrus OS\n", colorWhite);
-    draw_string(fb, fb_width, 0, curLine, "help: Shows this message\n", colorWhite);
-    draw_string(fb, fb_width, 0, curLine, "shutdown: Halts the CPU and allows you to turn of your PC safely (no ACPI yet)\n", colorWhite);
-    draw_string(fb, fb_width, 0, curLine, "reboot <delay>: Reboots the computer (delay argument is optional)\n", colorWhite);
-    draw_string(fb, fb_width, 0, curLine, "uptime: Prints system uptime\n", colorWhite);
-    draw_string(fb, fb_width, 0, curLine, "panic: Initiates a test kernel panic\n", colorWhite);
-    draw_string(fb, fb_width, 0, curLine, "colors: Prints all the colors available\n", colorWhite);
-    draw_string(fb, fb_width, 0, curLine, "time: Prints current date and time\n", colorWhite);
-    draw_string(fb, fb_width, 0, curLine, "meminfo: Prints the amount of available system RAM\n", colorWhite);
-    draw_string(fb, fb_width, 0, curLine, "beep <frequency> <duration>: Plays a certain frequency for a certain duration\n", colorWhite);
-    draw_string(fb, fb_width, 0, curLine, "music: Plays a short song\n", colorWhite);
-    draw_string(fb, fb_width, 0, curLine, "rd <file name> <file extension>: Prints the contents of a file\n", colorWhite);
-    draw_string(fb, fb_width, 0, curLine, "regdump: Dumps register values\n", colorWhite);
-    draw_string(fb, fb_width, 0, curLine, "exit: Exits kernel CLI (falls back to bare minimum CLI)\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "echo <message>                      Prints a message\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "clear                               Clears the screen\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "ver                                 Shows the current version of Zephyrus OS\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "help                                Shows this message\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "shutdown                            Halts the CPU and allows you to turn of your PC safely (no ACPI yet)\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "reboot <delay>                      Reboots the computer (delay argument is optional)\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "uptime                              Prints system uptime\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "panic                               Initiates a test kernel panic\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "time                                Prints current date and time\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "meminfo                             Prints the amount of available system RAM\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "beep <frequency> <duration>         Plays a certain frequency for a certain duration\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "music                               Plays a short song\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "rd <file name> <file extension>     Prints the contents of a file\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "regdump                             Dumps register values\n", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "exit                                Exits kernel CLI (falls back to bare minimum CLI)\n", colorWhite);
 }
 
 void shutdownf() {
@@ -64,7 +73,7 @@ void reboot8042() {
     if (argc < 2) {
         wait(1);
         clear(0x637a87);
-        LOG_INFO("Rebooting system...");
+        PRINT_INFO("Rebooting system...");
         wait(2);
 
         // Pulse the reset line through the keyboard controller
@@ -75,10 +84,10 @@ void reboot8042() {
 
     if (argv[1] > 0) {
         wait(1);
-        LOG_INFO_NONL("Sytem reboot scheduled to initiate after "); draw_dec(timer); draw_string(fb, fb_width, curX, curLine, " seconds\n", colorWhite);
+        PRINT_INFO_NONL("Sytem reboot scheduled to initiate after "); draw_dec(timer); draw_string(fb, fb_width, curX, curLine, " seconds\n", colorWhite);
         wait(timer);
         clear(0x637a87);
-        LOG_INFO("Rebooting system...");
+        PRINT_INFO("Rebooting system...");
         wait(1);
 
         // Pulse the reset line through the keyboard controller
@@ -103,26 +112,8 @@ void panicf() {
     getline(userIn);
     if (strcmp(userIn, "y") == 0) {
         wait(2);
-        kernelPanic("TEST KERNEL PANIC TRIGGERED", 0xDEADBEEF);
+        panic("TEST KERNEL PANIC TRIGGERED", 0xDEADBEEF);
     }
-}
-
-void colorsf() {
-    printcol("Blue ", COLOR8_BLUE);
-    printcol("Brown ", COLOR8_BROWN);
-    printcol("Cyan\n", COLOR8_CYAN);
-    printcol("Dark Gray ", COLOR8_DARK_GRAY);
-    printcol("Green ", COLOR8_GREEN);
-    printcol("Light Blue\n", COLOR8_LIGHT_BLUE);
-    printcol("Light Brown ", COLOR8_LIGHT_BROWN);
-    printcol("Light Cyan ", COLOR8_LIGHT_CYAN);
-    printcol("Light Gray\n", COLOR8_LIGHT_GRAY);
-    printcol("Light Green ", COLOR8_LIGHT_GREEN);
-    printcol("Light Magenta ", COLOR8_LIGHT_MAGENTA);
-    printcol("Light Red\n", COLOR8_LIGHT_RED);
-    printcol("Magenta ", COLOR8_MAGENTA);
-    printcol("Red ", COLOR8_RED);
-    printcol("White\n", COLOR8_WHITE);
 }
 
 void timef() {
@@ -308,9 +299,9 @@ void musicf() {
 }
 
 void exitf() {
-    LOG_INFO("Exiting kernel CLI...");
+    PRINT_INFO("Exiting kernel CLI...");
     wait(1);
-    LOG_INFO("Entering bare minimum CLI...");
+    PRINT_INFO("Entering bare minimum CLI...");
     wait(2);
     Reset();
     cli_running = false;

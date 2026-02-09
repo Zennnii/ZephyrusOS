@@ -1,33 +1,15 @@
 #include "ata.h"
 
-#define ATA_DATA      0x1F0
-#define ATA_ERROR     0x1F1
-#define ATA_SECCOUNT  0x1F2
-#define ATA_LBA_LO    0x1F3
-#define ATA_LBA_MID   0x1F4
-#define ATA_LBA_HI    0x1F5
-#define ATA_DRIVE     0x1F6
-#define ATA_STATUS    0x1F7
-#define ATA_CMD       0x1F7
-
-#define ATA_CMD_READ  0x20
-
-#define ATA_CMD_WRITE 0x30
-
-#define PIC1_COMMAND  0x20
-#define PIC2_COMMAND  0xA0
-#define PIC_EOI       0x20
-
-static bool ata_drive_present = false;
+bool ata_drive_present = false;
 
 // Wait until BSY clears
 static void ata_wait_bsy() {
-    while (inb(ATA_STATUS) & 0x80) ; // BSY = bit 7
+    while (inb(ATA_STATUS) & ATA_SR_BSY) ; // BSY = bit 7
 }
 
 // Wait until DRQ sets (data ready)
 static void ata_wait_drq() {
-    while (!(inb(ATA_STATUS) & 0x08)) ; // DRQ = bit 3
+    while (!(inb(ATA_STATUS) & ATA_SR_DRQ)) ; // DRQ = bit 3
 }
 
 // Wait until BSY clears and check for errors
@@ -35,9 +17,57 @@ static int ata_wait_ready() {
     uint8_t status;
     do {
         status = inb(ATA_STATUS);
-        if (status & 0x01) return -1; // ERR bit
-    } while (status & 0x80); // BSY
+        if (status & ATA_SR_ERR) return -1; // ERR bit
+    } while (status & ATA_SR_BSY); // BSY
     return 0; // OK
+}
+
+bool ata_detect_drive(void) {
+    outb(ATA_DRIVE, 0xA0); // master
+    io_wait();
+
+    outb(ATA_SECCOUNT, 0);
+    outb(ATA_LBA_LO, 0);
+    outb(ATA_LBA_MID, 0);
+    outb(ATA_LBA_HI, 0);
+
+    uint8_t status = inb(ATA_STATUS);
+
+    if (status == 0) {
+        return false; // definitely no drive
+    }
+
+    // Wait for BSY to clear
+    while (status & ATA_SR_BSY) {
+        status = inb(ATA_STATUS);
+    }
+
+    uint8_t cl = inb(ATA_LBA_MID);
+    uint8_t ch = inb(ATA_LBA_HI);
+
+    // ATA drive signature
+    if (cl == 0x00 && ch == 0x00) {
+        return true; // ATA drive present
+    }
+
+    // ATAPI drive signature
+    if (cl == 0x14 && ch == 0xEB) {
+        return true; // ATAPI (CD/DVD)
+    }
+
+    return false;
+}
+
+void ata_init(void) {
+    bool drive_present = ata_detect_drive();
+
+    ata_drive_present = drive_present;
+
+    if (!drive_present) {
+        LOG_INFO("No ATA drive detected. Running in live mode.");
+    } else {
+        LOG_INFO("ATA drive detected.");
+    }
 }
 
 volatile uint16_t *ata_buffer = 0;
@@ -48,15 +78,7 @@ volatile int ata_mode = 0;                 // 0 = read, 1 = write
 
 void ata_primary_isr(struct InterruptRegisters* regs) {
     uint8_t status = inb(ATA_STATUS);
-
-    if (status == 0xFF) {
-        // Drive is missing
-        ata_drive_present = false;
-        return;
-    }
-    ata_drive_present = true;
     
-
     if (ata_mode == 0) { // READ mode
         if (status & 0x08) { // DRQ
             if (ata_buffer) {

@@ -110,7 +110,6 @@ command_t commands[] = {
     {"reboot", reboot8042},
     {"uptime", uptimef},
     {"panic", panicf},
-    {"colors", colorsf},
     {"time", timef},
     {"beep", beepf},
     {"music", musicf},

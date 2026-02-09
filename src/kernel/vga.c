@@ -21,12 +21,12 @@ uint16_t get_cursor_offset() {
 
 void get_cursor_position(int* x, int* y) {
     uint16_t offset = get_cursor_offset();
-    *x = offset % width;
-    *y = offset / width;
+    *x = offset % widthv;
+    *y = offset / widthv;
 }
 
 void moveCursor(uint16_t row, uint16_t col) {
-    uint16_t pos = row * width + col;
+    uint16_t pos = row * widthv + col;
 
     // Tells VGA we want to set cursor high byte
     outb(VGA_CONTROL_PORT, 0x0E);
@@ -51,28 +51,28 @@ void Reset() {
     line = 0;
     column = 0;
 
-    for (uint16_t y = 0; y < height; y++) {
-        for (uint16_t x = 0; x < width; x++) {
-            vga[y * width + x] = ' ' | currentColor;
+    for (uint16_t y = 0; y < heightv; y++) {
+        for (uint16_t x = 0; x < widthv; x++) {
+            vga[y * widthv + x] = ' ' | currentColor;
         }
     }
     moveCursor(line, column);
 }
 
 void scrollUp() {
-    for (uint16_t y = 1; y < height; y++) {
-        for (uint16_t x = 0; x < width; x++) {
-            vga[(y-1) * width + x] = vga[y * width + x];
+    for (uint16_t y = 1; y < heightv; y++) {
+        for (uint16_t x = 0; x < widthv; x++) {
+            vga[(y-1) * widthv + x] = vga[y * widthv + x];
         }
     }
-        for (uint16_t x = 0; x < width; x++) {
-            vga[(height - 1) * width + x] = ' ' | currentColor;
+        for (uint16_t x = 0; x < widthv; x++) {
+            vga[(heightv - 1) * widthv + x] = ' ' | currentColor;
         }
         moveCursor(line, column);
     }
 
 void newLine() {
-    if (line < height - 1) {
+    if (line < heightv - 1) {
         line++;
         column = 0;
     }
@@ -95,19 +95,19 @@ void print_char(char c) {
             backspace();
             break;
         case '\t':
-                if (column == width) {
+                if (column == widthv) {
                     newLine();
                 }
-                vga[line * width + (column++)] = ' ' | currentColor;
-                vga[line * width + (column++)] = ' ' | currentColor;
-                vga[line * width + (column++)] = ' ' | currentColor;
-                vga[line * width + (column++)] = ' ' | currentColor;
+                vga[line * widthv + (column++)] = ' ' | currentColor;
+                vga[line * widthv + (column++)] = ' ' | currentColor;
+                vga[line * widthv + (column++)] = ' ' | currentColor;
+                vga[line * widthv + (column++)] = ' ' | currentColor;
                 break;   
         default:
-            if (column == width) {
+            if (column == widthv) {
                 newLine();
             }
-            vga[line * width + (column++)] = c | currentColor;
+            vga[line * widthv + (column++)] = c | currentColor;
             break;
     }
     moveCursor(line, column);
@@ -134,10 +134,10 @@ void printCharCol(char c, uint16_t col) {
             backspace();
             break;
         default:
-            if (column == width) {
+            if (column == widthv) {
                 newLine();
             }
-            vga[line * width + (column++)] = c | currentColor;
+            vga[line * widthv + (column++)] = c | currentColor;
             break;
     }
     moveCursor(line, column);
@@ -190,7 +190,7 @@ void print_dec(unsigned int num) {
 void backspace() {
     if (column > 3) {
         column--;
-        vga[line * width + column] = ' ' | currentColor; // Erase char
+        vga[line * widthv + column] = ' ' | currentColor; // Erase char
         moveCursor(line, column);
     }
     // else if column == 0, do nothing (no backspacing into previous line)

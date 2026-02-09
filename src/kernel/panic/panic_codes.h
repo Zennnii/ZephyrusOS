@@ -1,0 +1,13 @@
+#ifndef PANIC_CODES_H
+#define PANIC_CODES_H
+
+typedef enum {
+    PANIC_HEAP_MAGIC_CORRUPTION = 0x1001,
+    PANIC_HEAP_INVALID_SIZE     = 0x1002,
+    PANIC_HEAP_BAD_NEXT_LINK    = 0x1003,
+    PANIC_HEAP_BAD_PREV_LINK    = 0x1004,
+    PANIC_HEAP_OUT_OF_BOUNDS    = 0x1005,
+    PANIC_HEAP_DOUBLE_FREE      = 0x1006,
+} panic_codes_t;
+
+#endif

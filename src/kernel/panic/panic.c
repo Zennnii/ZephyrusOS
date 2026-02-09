@@ -1,6 +1,8 @@
 #include "panic.h"
+#include "gfx.h"
+#include "util/util.h"
 
-void kernelPanic(const char* errorMessage, uint32_t errorCode) {
+void panic(const char* errorMessage, uint32_t errorCode) {
     clear(0x960b0b);
     // Print panic header
     draw_string(fb, fb_width, 0, 0, "KERNEL PANIC\n", colorWhite);

@@ -4,8 +4,7 @@
 #include "stdint.h"
 #include "drivers/PS2_Keyboard_Driver/keyboard.h"
 #include "bmcmds/bmcmds.h"
-#include "fb/dis.h"
-#include "fb/colors.h"
+#include "gfx.h"
 
 extern bool bare_cli_running;
 
