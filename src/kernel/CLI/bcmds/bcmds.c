@@ -27,7 +27,7 @@ void clearf() {
 }
 
 void verf() {
-    draw_string(fb, fb_width, 0, curLine, "Zephyrus OS [Version 1.2.0]", colorWhite);
+    draw_string(fb, fb_width, 0, curLine, "Zephyrus OS [Version 1.3.0]", colorWhite);
     newLineFB();
 }
 
