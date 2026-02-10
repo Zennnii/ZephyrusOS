@@ -66,6 +66,10 @@ This project is ongoing.
 - Expand font rendering (Currently limited to only an 8x8 font)  
 - Support for more image formats (BMP, etc.)  
 
+- **NOTE:**
+
+  - Note: The OS is being transitioned from x86 to x86_64 architecture. As a result, updates and releases may be delayed.
+
 ---
 
 ## Contributing
