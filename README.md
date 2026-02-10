@@ -3,6 +3,10 @@
 Zephyrus OS is a hobby x86 operating system kernel I started developing on August 9, 2025.  
 This project is ongoing.
 
+**NOTE:**
+
+  - The OS is being transitioned from x86 to x86_64 architecture. As a result, updates and releases may be delayed.
+
 ---
 
 ## Current Features
@@ -65,10 +69,6 @@ This project is ongoing.
 - Additional device drivers (PS/2 Mouse, more COM ports)  
 - Expand font rendering (Currently limited to only an 8x8 font)  
 - Support for more image formats (BMP, etc.)  
-
-- **NOTE:**
-
-  - Note: The OS is being transitioned from x86 to x86_64 architecture. As a result, updates and releases may be delayed.
 
 ---
 
